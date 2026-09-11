@@ -49,10 +49,13 @@ const schema = new Schema<Irestaurant>({
             required:true
         },
         formattedAddress:{
-            type:
+            type:String,
+            required:true
         }
+    },
+    isOpen:{
+        type:Boolean,
+        default:false
     }
-    
-
-
-})
+},{timestamps:true})
+schema.index({autolocation:"2dsphere"})
