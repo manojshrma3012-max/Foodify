@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { uploadImage } from '../utils/imageupload.js';
-const router = Router();
-router.post('/uploads', async (req, res) => {
+const uploadroutes = Router();
+uploadroutes.post('/uploads', async (req, res) => {
     try {
         const { buffer, folder } = req.body;
         const data = await uploadImage(buffer, folder);
@@ -16,4 +16,4 @@ router.post('/uploads', async (req, res) => {
         });
     }
 });
-export default router;
+export default uploadroutes;
