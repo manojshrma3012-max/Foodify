@@ -5,6 +5,23 @@ export interface User {
     image : string,
     role:string
 }
+export interface Restaurant{
+    restId:string,
+    name : string,
+    image : string,
+    ownerId : string,
+    PhoneNo : Number,
+    description?:string,
+    isverified:boolean
+
+    autolocation :{
+        type:"Point",
+        coordinates : [number,number]
+        formattedAddress:string
+    }
+    isOpen:boolean,
+    createdAt:Date
+}
 export interface LocationData{
     latitude : number,
     longitude : number,

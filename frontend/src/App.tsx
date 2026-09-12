@@ -8,7 +8,13 @@ import Protectedroutes from './components/Protectedroutes'
 import SelectRoles from './pages/SelectRoles'
 import NavBar from './components/NavBar'
 import Account from './pages/Account'
+import { useAppdata } from './context/AppContext'
+import Restaurants from './pages/Restaurants'
 const App = () => {
+  const {user} = useAppdata()
+  if(user && user?.role==="seller"){
+    return <Restaurants/>
+  }
   return (
     <>
     <BrowserRouter>
