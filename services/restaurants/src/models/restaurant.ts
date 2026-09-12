@@ -44,15 +44,19 @@ const schema = new Schema<Irestaurant>({
             enum:["Point"],
             required:true
         },
-        coordinatesL:{
+        coordinates:{
             type:[Number],
             required:true
         },
         formattedAddress:{
-            type:
+            type:String,
+            required:true
         }
+    },
+    isOpen:{
+        type:Boolean
     }
-    
 
-
-})
+},{timestamps:true})
+schema.index({autolocation:"2dsphere"})
+export default mongoose.model<Irestaurant>("Restaurant",schema)

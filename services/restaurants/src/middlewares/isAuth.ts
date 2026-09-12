@@ -61,3 +61,17 @@ export async function authmiddle(
         });
     }
 }
+export async function isSeller(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+): Promise<void>{
+    const user = req.user
+    if(user && user.role !== "seller"){
+        res.status(401).json({
+            message : "Unauthorized must be a seller"
+        })
+        return
+    }
+    next()
+}
