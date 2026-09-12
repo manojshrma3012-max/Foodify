@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import TryCatch from "../middlewares/trycatch.js";
 import restaurant from "../models/restaurant.js";
 import dotenv from 'dotenv'
+import  Jwt  from "jsonwebtoken";
 
 dotenv.config()
 
@@ -59,3 +60,42 @@ export const addrestaurants = TryCatch(async (req:AuthenticatedRequest,res)=>{
     })
 
 })
+export const fetchmyrestaurant = TryCatch(async (req: AuthenticatedRequest, res) => {
+    if (!req.user) {
+        return res.status(401).json({
+            message: "seller not found"
+        });
+    }
+
+    const rest = await restaurant.findOne({
+        ownerId: req.user.id
+    });
+
+    if (!rest) {
+        return res.status(400).json({
+            message: "rest not found"
+        });
+    }
+
+    if(!req.user.restID){
+        const payloadUser = {
+        ...req.user,
+        restID: (req.user as any).restID || rest._id.toString()
+    };
+
+    const token = Jwt.sign(
+        { user: payloadUser },
+        process.env.SECRET || "default_secret",
+        { expiresIn: "15d" }
+    );
+
+    return res.status(200).json({
+        message: "Restaurant fetched successfully",
+        restaurant: rest,
+        token
+    });
+    }
+    res.status(200).json({
+        restaurant:rest
+    })
+});

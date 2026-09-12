@@ -26,6 +26,7 @@ export async function authmiddle(req, res, next) {
             return;
         }
         req.user = {
+            restID: tokenUser?.restID,
             email: tokenUser.email,
             id: tokenUser.id,
             name: tokenUser.name,
@@ -39,4 +40,14 @@ export async function authmiddle(req, res, next) {
             message: "Forbidden Invalid token"
         });
     }
+}
+export async function isSeller(req, res, next) {
+    const user = req.user;
+    if (user && user.role !== "seller") {
+        res.status(401).json({
+            message: "Unauthorized must be a seller"
+        });
+        return;
+    }
+    next();
 }
