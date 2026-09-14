@@ -1,5 +1,6 @@
 
 import axios from "axios";
+import FormData from "form-data";
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import TryCatch from "../middlewares/trycatch.js";
 import restaurant from "../models/restaurant.js";
@@ -37,10 +38,26 @@ export const addrestaurants = TryCatch(async (req:AuthenticatedRequest,res)=>{
         })
     }
     const filebuffer = req.file?.buffer
-    const {data} = await axios.post(`${process.env.UTILS_SERVICE_URL}/api/body`,{
-        filebuffer,
-        folder:"restaurants"
-    })
+    console.log(filebuffer)
+    const form = new FormData();
+
+form.append("folder", "restaurants");
+
+form.append("file", file.buffer, {
+    filename: file.originalname,
+    contentType: file.mimetype
+});
+
+const {data} = await axios.post(
+    "http://localhost:5002/api/uploads",
+    form,
+    {
+        headers: form.getHeaders()
+    }
+);
+console.log(data)
+    
+      
     const rest = await restaurant.create({
         name,
         description,

@@ -20,7 +20,7 @@ const schema = new Schema({
     },
     isverified: {
         type: Boolean,
-        required: true
+        default: false
     },
     autolocation: {
         type: {

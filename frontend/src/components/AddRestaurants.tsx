@@ -13,12 +13,13 @@ interface RestaurantForm {
 }
 
 const AddRestaurant = () => {
-    const {loadingLoc,location} = useAppdata()
+    const { loadingLoc, location } = useAppdata();
 
     const {
         register,
         handleSubmit,
         reset,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<RestaurantForm>({
         defaultValues: {
@@ -28,39 +29,61 @@ const AddRestaurant = () => {
         },
     });
 
+    // Get selected image
+    const image = watch("image");
+
     const addRestaurant = async (data: RestaurantForm) => {
         console.log("Restaurant data:", data);
-        const formData = new FormData()
+
+        const formData = new FormData();
+
         formData.append("name", data.name);
         formData.append("file", data.image[0]);
-        formData.append("Phone", String(data.PhoneNo));
+        formData.append("phone", String(data.PhoneNo));
         formData.append("description", data.description ?? "");
-        formData.append("longitude", String(location?.longitude ?? ""))
-        formData.append("latiude", String(location?.latitude ?? ""))
-        formData.append("formattedaddress", String(location?.FormattedAddress ?? ""))
+
+        // Location
+        formData.append(
+            "longitude",
+            String(location?.longitude ?? "")
+        );
+
+        formData.append(
+            "latitude",
+            String(location?.latitude ?? "")
+        );
+
+        formData.append(
+            "formattedaddress",
+            String(location?.FormattedAddress ?? "")
+        );
+
         try {
-            const {data} = await axios.post(`${restserviceurl}/api/restaurants/addnew`,formData,{
-                headers:{
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
+            const { data } = await axios.post(
+                `${restserviceurl}/api/restaurants/addnew`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
                 }
-            })
-            console.log(data)
-            toast.success("restaurant added succfully")
+            );
+
+            console.log(data);
+
+            toast.success("Restaurant added successfully");
+
+            reset();
         } catch (error) {
-            console.log(error)
-            toast.error("error while Adding Restaurant")
-            
+            console.log(error);
+            toast.error("Error while adding restaurant");
         }
-
-
-
-        reset();
     };
 
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-10">
             <div className="mx-auto max-w-2xl">
-                {/* Header */}
+
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Add your restaurant
@@ -72,12 +95,13 @@ const AddRestaurant = () => {
                     </p>
                 </div>
 
-                {/* Form Card */}
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+
                     <form
                         onSubmit={handleSubmit(addRestaurant)}
                         className="space-y-6"
                     >
+
                         {/* Restaurant Name */}
                         <div>
                             <label
@@ -118,6 +142,7 @@ const AddRestaurant = () => {
                             )}
                         </div>
 
+
                         {/* Phone Number */}
                         <div>
                             <label
@@ -133,8 +158,12 @@ const AddRestaurant = () => {
                                 placeholder="Enter restaurant phone number"
                                 {...register("PhoneNo", {
                                     required: "Phone number is required",
+
                                     setValueAs: (value) =>
-                                        value === "" ? undefined : Number(value),
+                                        value === ""
+                                            ? undefined
+                                            : Number(value),
+
                                     validate: (value) =>
                                         /^[6-9]\d{9}$/.test(String(value)) ||
                                         "Enter a valid 10-digit phone number",
@@ -153,6 +182,7 @@ const AddRestaurant = () => {
                             )}
                         </div>
 
+
                         {/* Image */}
                         <div>
                             <label
@@ -170,35 +200,39 @@ const AddRestaurant = () => {
                                         : "border-gray-300 bg-gray-50 hover:border-red-400 hover:bg-red-50"
                                 }`}
                             >
-                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-500">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.8}
-                                        stroke="currentColor"
-                                        className="h-6 w-6"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M3 16.5V8.25A2.25 2.25 0 015.25 6h3l1.5-1.5h4.5L15.75 6h3A2.25 2.25 0 0121 8.25v8.25A2.25 2.25 0 0118.75 18.75H5.25A2.25 2.25 0 013 16.5z"
-                                        />
-                                        <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="3.25"
-                                        />
-                                    </svg>
-                                </div>
 
-                                <p className="text-sm font-medium text-gray-700">
-                                    Click to upload restaurant image
-                                </p>
+                                {/* Image Preview */}
+                                {image?.length > 0 ? (
+                                    <>
+                                        <img
+                                            src={URL.createObjectURL(image[0])}
+                                            alt="Restaurant preview"
+                                            className="mb-4 h-48 w-full rounded-xl object-cover"
+                                        />
 
-                                <p className="mt-1 text-xs text-gray-400">
-                                    PNG, JPG or JPEG
-                                </p>
+                                        <p className="text-sm font-medium text-gray-700">
+                                            {image[0].name}
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            Click to change image
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-500">
+                                            📷
+                                        </div>
+
+                                        <p className="text-sm font-medium text-gray-700">
+                                            Click to upload restaurant image
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            PNG, JPG or JPEG
+                                        </p>
+                                    </>
+                                )}
 
                                 <input
                                     id="image"
@@ -208,17 +242,20 @@ const AddRestaurant = () => {
                                     {...register("image", {
                                         required:
                                             "Restaurant image is required",
+
                                         validate: {
                                             validType: (files) =>
                                                 !files?.length ||
-                                                ["image/jpeg", "image/png"].includes(
-                                                    files[0].type
-                                                ) ||
+                                                [
+                                                    "image/jpeg",
+                                                    "image/png",
+                                                ].includes(files[0].type) ||
                                                 "Only JPG and PNG images are allowed",
 
                                             validSize: (files) =>
                                                 !files?.length ||
-                                                files[0].size <= 5 * 1024 * 1024 ||
+                                                files[0].size <=
+                                                    5 * 1024 * 1024 ||
                                                 "Image must be smaller than 5MB",
                                         },
                                     })}
@@ -232,6 +269,7 @@ const AddRestaurant = () => {
                             )}
                         </div>
 
+
                         {/* Description */}
                         <div>
                             <label
@@ -239,6 +277,7 @@ const AddRestaurant = () => {
                                 className="mb-2 block text-sm font-medium text-gray-800"
                             >
                                 Description
+
                                 <span className="ml-1 font-normal text-gray-400">
                                     (optional)
                                 </span>
@@ -268,7 +307,9 @@ const AddRestaurant = () => {
                                 </p>
                             )}
                         </div>
-                         {/* Location */}
+
+
+                        {/* Location */}
                         <div>
                             <label className="mb-2 block text-sm font-medium text-gray-800">
                                 Restaurant location
@@ -276,7 +317,6 @@ const AddRestaurant = () => {
 
                             <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
 
-                                {/* Location Icon */}
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
                                     📍
                                 </div>
@@ -295,7 +335,8 @@ const AddRestaurant = () => {
                                             <p className="mt-0.5 truncate text-sm font-medium text-gray-800">
                                                 {typeof location === "string"
                                                     ? location
-                                                    : location?.FormattedAddress || "Location unavailable"}
+                                                    : location?.FormattedAddress ||
+                                                      "Location unavailable"}
                                             </p>
                                         </>
                                     )}
@@ -306,6 +347,7 @@ const AddRestaurant = () => {
 
                         {/* Buttons */}
                         <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end">
+
                             <button
                                 type="button"
                                 onClick={() => reset()}
@@ -323,10 +365,11 @@ const AddRestaurant = () => {
                                     ? "Adding restaurant..."
                                     : "Add restaurant"}
                             </button>
+
                         </div>
+
                     </form>
                 </div>
-
             </div>
         </div>
     );

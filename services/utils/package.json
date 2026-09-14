@@ -10,10 +10,12 @@
     "dev": " npm run build && concurrently \"tsc --watch\" \"node --watch dist/index.js\""
   },
   "dependencies": {
+    "@types/multer": "^2.2.0",
     "cloudinary": "^2.11.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "multer": "^2.4.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

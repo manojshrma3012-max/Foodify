@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    api_secret: process.env.CLOUDINARY_SECRET,
     cloud_name: process.env.CLOUDINARY_NAME
 });
 export async function uploadImage(buffer, folder) {
