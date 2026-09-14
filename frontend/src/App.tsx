@@ -27,10 +27,7 @@ const App = () => {
        <Route path = 'select-role' element={<SelectRoles/>}></Route>
        <Route path='/account' element={<Account/>}></Route>
       </Route>
-      
-     
     </Routes>
-    <Toaster/>
     </BrowserRouter>
     </>
   )

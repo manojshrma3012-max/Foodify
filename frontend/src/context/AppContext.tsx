@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { serviceurl } from "../main"
 import axios from "axios"
 import { type AppContext } from '../Types'
+import { Toaster } from "react-hot-toast";
 
 const appcontext = createContext<AppContext | undefined>(undefined);
 
@@ -83,6 +84,7 @@ export const Appprovider = ({children}:{children:React.ReactNode}) => {
     return (
         <appcontext.Provider value={{ user: User, isAuth, location: Location, loadingLoc, city: City, loading, setUser, setisAuth, setLocation, setloadingLoc, setCity, setloading }}>
             {children}
+            <Toaster/>
         </appcontext.Provider>
     )
 }

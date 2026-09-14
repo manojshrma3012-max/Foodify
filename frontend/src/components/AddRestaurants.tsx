@@ -11,8 +11,11 @@ interface RestaurantForm {
     PhoneNo: number;
     description?: string;
 }
+interface props{
+    fetchrest : ()=>Promise<void>
+}
 
-const AddRestaurant = () => {
+const AddRestaurant = ({fetchrest}:props) => {
     const { loadingLoc, location } = useAppdata();
 
     const {
@@ -72,6 +75,7 @@ const AddRestaurant = () => {
             console.log(data);
 
             toast.success("Restaurant added successfully");
+            fetchrest()
 
             reset();
         } catch (error) {
