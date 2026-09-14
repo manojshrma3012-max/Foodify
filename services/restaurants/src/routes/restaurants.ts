@@ -1,9 +1,11 @@
 import express from 'express'
 import {isSeller,authmiddle} from '../middlewares/isAuth.js'
-import { addrestaurants, fetchmyrestaurant } from '../controllers/restaurants.js'
+import { addrestaurants, fetchmyrestaurant, updaterestaurant, updaterestaurantdetails } from '../controllers/restaurants.js'
 import uploadfile from '../middlewares/multer.js'
 const addroute = express.Router()
 
 addroute.post('/addnew',authmiddle,isSeller,uploadfile,addrestaurants)
 addroute.get('/my',authmiddle,isSeller, fetchmyrestaurant)
+addroute.put('/status',authmiddle,isSeller,updaterestaurant)
+addroute.put('/update',authmiddle,isSeller,updaterestaurantdetails)
 export default addroute

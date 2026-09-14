@@ -97,12 +97,12 @@ export const fetchmyrestaurant = TryCatch(async (req: AuthenticatedRequest, res)
     if(!req.user.restID){
         const payloadUser = {
         ...req.user,
-        restID: (req.user as any).restID || rest._id.toString()
+        restID: rest._id.toString()
     };
 
     const token = Jwt.sign(
-        { user: payloadUser },
-        process.env.SECRET || "default_secret",
+        payloadUser ,
+        process.env.SECRET as string,
         { expiresIn: "15d" }
     );
 
@@ -116,3 +116,81 @@ export const fetchmyrestaurant = TryCatch(async (req: AuthenticatedRequest, res)
         restaurant:rest
     })
 });
+export const updaterestaurant = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    if(!req.user){
+        return res.status(403).json({
+            message : "User not found"
+        })
+    }
+    const {status} = req.body
+    if(typeof status !== "boolean"){
+        return res.status(400).json({
+            message : "data should be true or false"
+        })
+    }
+    const rest = await restaurant.findOneAndUpdate({
+        ownerId : req.user.id
+    },{isOpen:status},{new : true})
+    if(!rest){
+        return res.status(400).json({
+        message : "Restaurant Not Founcd"
+    })
+}
+return res.status(200).json({
+    messaage : "updated successfully",
+    restaurant: rest
+})
+
+
+})
+
+export const updaterestaurantdetails = TryCatch(
+  async (req: AuthenticatedRequest, res) => {
+
+    if (!req.user) {
+      return res.status(403).json({
+        message: "User not found"
+      });
+    }
+
+    const { name, description } = req.body;
+
+    // Validate name
+    if (typeof name !== "string" || name.trim() === "") {
+      return res.status(400).json({
+        message: "Restaurant name is required"
+      });
+    }
+
+    // Validate description
+    if (typeof description !== "string") {
+      return res.status(400).json({
+        message: "Description should be a string"
+      });
+    }
+
+    const rest = await restaurant.findOneAndUpdate(
+      {
+        ownerId: req.user.id
+      },
+      {
+        name: name.trim(),
+        description: description.trim()
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!rest) {
+      return res.status(404).json({
+        message: "Restaurant not found"
+      });
+    }
+
+    return res.status(200).json({
+      message: "Restaurant updated successfully",
+      restaurant: rest
+    });
+  }
+);

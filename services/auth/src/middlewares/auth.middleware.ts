@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser } from "../models/users.js";
 export type payloadUser = {
+    restID? : string | null | undefined
     email:string,
     id:string,
     image?:string | null | undefined,
@@ -38,6 +39,7 @@ export async function authmiddle(
     try {
         const payload = jwt.verify(token, process.env.SECRET as string) as JwtPayload;
         const tokenUser = (payload.tokendata ?? payload) as Partial<payloadUser>;
+        console.log(tokenUser)
         if (
             typeof tokenUser.email !== "string" ||
             typeof tokenUser.id !== "string" ||
@@ -53,7 +55,7 @@ export async function authmiddle(
             id: tokenUser.id,
             name: tokenUser.name,
             role: tokenUser?.role,
-            image: tokenUser?.image
+            image: tokenUser?.image,
         };
         next();
     } catch (error) {

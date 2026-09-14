@@ -38,7 +38,8 @@ const schema = new Schema({
         }
     },
     isOpen: {
-        type: Boolean
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 schema.index({ autolocation: "2dsphere" });

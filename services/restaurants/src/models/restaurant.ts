@@ -54,7 +54,8 @@ const schema = new Schema<Irestaurant>({
         }
     },
     isOpen:{
-        type:Boolean
+        type:Boolean,
+        default:false
     }
 
 },{timestamps:true})

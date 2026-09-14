@@ -17,6 +17,7 @@ export async function authmiddle(req, res, next) {
     try {
         const payload = jwt.verify(token, process.env.SECRET);
         const tokenUser = (payload.tokendata ?? payload);
+        console.log(tokenUser);
         if (typeof tokenUser.email !== "string" ||
             typeof tokenUser.id !== "string" ||
             typeof tokenUser.name !== "string") {
@@ -30,7 +31,7 @@ export async function authmiddle(req, res, next) {
             id: tokenUser.id,
             name: tokenUser.name,
             role: tokenUser?.role,
-            image: tokenUser?.image
+            image: tokenUser?.image,
         };
         next();
     }
