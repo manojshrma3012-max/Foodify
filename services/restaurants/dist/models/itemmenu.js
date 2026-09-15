@@ -25,7 +25,7 @@ const menuSchema = new Schema({
     },
     inStock: {
         type: Boolean,
-        required: true,
+        default: true,
     }
 }, {
     timestamps: true

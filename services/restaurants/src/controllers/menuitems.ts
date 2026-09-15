@@ -54,15 +54,23 @@ export const addmenuItems = TryCatch(async(req:AuthenticatedRequest,res)=>{
         name,
         image:data.url,
         price,
-        description
+        description,
+        restID:rest._id
     })
-
+    return res.status(201).json({
+        message : "tiem added successfully",
+        item
+    })
 })
-//  restID : mongoose.Types.ObjectId,
-//     name : string,
-//     description : string,
-//     image : string,
-//     price : number,
-//     inStock : boolean,
-//     createdAt:Date,
-//     updatedAt:Date
+export const fetchmenuitems = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const {id} = req.params
+    if(!id){
+        return res.status(401).json({
+            message : "Id is required"
+        })
+    }
+    const items = await Menu.find({restID:id})
+    return res.status(200).json({
+        items
+    })
+})

@@ -5,6 +5,8 @@ import { restserviceurl } from "../main"
 import AddRestaurants from "../components/AddRestaurants"
 import RestaurantProfile from "../components/RestaurantProfile"
 import { useAppdata } from "../context/AppContext"
+import Menuitems from "../components/Menuitems"
+import AddMenuitems from "../components/AddMenuitems"
 type sellerTab = "menu" | "sales" | "add-items"
 
 
@@ -69,9 +71,9 @@ const Restaurants = () => {
         </div>
 
         <div className="p-4">
-          {tab === "menu" && <div>Menu Items</div>}
+          {tab === "menu" && <div><Menuitems/></div>}
           {tab === "sales" && <div>Sales</div>}
-          {tab === "add-items" && <div>Add Items</div>}
+          {tab === "add-items" && <div><AddMenuitems/></div>}
         </div>
       </div>
     </div>

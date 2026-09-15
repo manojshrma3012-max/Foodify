@@ -36,7 +36,7 @@ const menuSchema = new Schema<menuItems>({
     },
     inStock:{
         type:Boolean,
-        required:true,
+        default:true,
     }
 },{
     timestamps:true
