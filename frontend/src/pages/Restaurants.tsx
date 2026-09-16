@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import {type Restaurant } from "../Types"
+import {type menuItems, type Restaurant } from "../Types"
 import axios from "axios"
 import { restserviceurl } from "../main"
 import AddRestaurants from "../components/AddRestaurants"
@@ -7,6 +7,7 @@ import RestaurantProfile from "../components/RestaurantProfile"
 import { useAppdata } from "../context/AppContext"
 import Menuitems from "../components/Menuitems"
 import AddMenuitems from "../components/AddMenuitems"
+import toast from "react-hot-toast"
 type sellerTab = "menu" | "sales" | "add-items"
 
 
@@ -41,6 +42,27 @@ const Restaurants = () => {
  useEffect(()=>{
   fetchrest()
  },[])
+ const [menuItems, setmenuItems] = useState<menuItems[]>([])
+ const fetchitems = async(restId : string)=>{
+  try {
+    const {data} = await axios.get(`${restserviceurl}/api/items/all/${restId}`,{
+      headers:{
+        Authorization:`Bearer ${localStorage.getItem("token")}`
+      }
+    })
+    console.log(data)
+    setmenuItems(data.items)
+  } catch (error) {
+    console.log(error)
+  }
+ }
+ useEffect(()=>{
+  console.log("useffect called")
+  console.log(Restaurant?._id)
+  if(Restaurant?._id){
+    fetchitems(Restaurant._id)
+  }
+ },[Restaurant])
  if(loading) {return <div>Loading...</div>}
  if(!Restaurant){
   return <AddRestaurants fetchrest={fetchrest}/>
@@ -71,9 +93,15 @@ const Restaurants = () => {
         </div>
 
         <div className="p-4">
-          {tab === "menu" && <div><Menuitems/></div>}
+          {tab === "menu" && (
+            <Menuitems
+              items={menuItems}
+              onItemdeleted={() => fetchitems(Restaurant._id)}
+              isseller={user?.role === "seller"}
+            />
+          )}
           {tab === "sales" && <div>Sales</div>}
-          {tab === "add-items" && <div><AddMenuitems/></div>}
+          {tab === "add-items" && <div><AddMenuitems onItemAdded={()=>fetchitems(Restaurant._id)}/></div>}
         </div>
       </div>
     </div>
