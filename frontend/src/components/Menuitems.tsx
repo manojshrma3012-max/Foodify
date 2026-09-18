@@ -48,11 +48,12 @@ const Menuitems = ({
   ) => {
     try {
       setloadingitemid(id);
-       const {data} = await axios.delete(`${restserviceurl}/api/items/stockstatus/${id}`,{
+       const {data} = await axios.put(`${restserviceurl}/api/items/stockstatus/${id}`,null,{
       headers:{
         Authorization:`Bearer ${localStorage.getItem("token")}`
       }
-     })      
+     }) 
+     onItemdeleted()     
       console.log(data)
     } catch(error){
       console.log(error)

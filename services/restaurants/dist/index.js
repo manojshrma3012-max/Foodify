@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api/restaurants', addroute);
-app.use('/api/restaurants', menuroutes);
+app.use('/api/items', menuroutes);
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`auth service running on ${PORT}`);

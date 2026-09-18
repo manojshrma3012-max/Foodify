@@ -1,4 +1,10 @@
 import express from 'express';
+import { isSeller, authmiddle } from '../middlewares/isAuth.js';
+import uploadfile from '../middlewares/multer.js';
+import { addmenuItems, deleteitems, fetchmenuitems, togglestock } from '../controllers/menuitems.js';
 const menuroutes = express.Router();
-menuroutes.post('/new');
+menuroutes.post('/new', authmiddle, isSeller, uploadfile, addmenuItems);
+menuroutes.get('/all/:id', authmiddle, fetchmenuitems);
+menuroutes.delete('/deleteitem/:id', authmiddle, isSeller, deleteitems);
+menuroutes.put('/stockstatus/:itemid', authmiddle, isSeller, togglestock);
 export default menuroutes;
