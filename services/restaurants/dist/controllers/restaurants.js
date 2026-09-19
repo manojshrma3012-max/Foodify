@@ -153,3 +153,54 @@ export const updaterestaurantdetails = TryCatch(async (req, res) => {
         restaurant: rest
     });
 });
+export const getnearbyrest = TryCatch(async (req, res) => {
+    const { latitude, longitude, radius = 5000, search = "" } = req.query;
+    if (!longitude || !latitude) {
+        return res.status(400).json({
+            messaage: "Details Required"
+        });
+    }
+    const query = {
+        isverified: true
+    };
+    if (search && typeof search === "string") {
+        query.name = { $regex: search, $options: "i" };
+    }
+    const rest = await restaurant.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: 'Point',
+                    coordinates: [Number(longitude), Number(latitude)]
+                },
+                distanceField: "distance",
+                maxDistance: Number(radius),
+                spherical: true,
+                query,
+            }
+        },
+        {
+            $sort: {
+                isOpen: -1,
+                distance: 1,
+            }
+        }, {
+            $addFields: {
+                distanceKm: {
+                    $round: [{ $divide: ["$distance", 1000] }, 2]
+                }
+            }
+        }
+    ]);
+    res.status(200).json({
+        rest,
+        count: rest.length
+    });
+});
+export const fetchsingle = TryCatch(async (req, res) => {
+    const rest = await restaurant.findById(req.params.id);
+    res.status(200).json({
+        message: "fetched",
+        rest
+    });
+});
