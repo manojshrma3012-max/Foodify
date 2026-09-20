@@ -6,7 +6,8 @@ import { BiMapPin, BiSearch } from "react-icons/bi"
 
 
 const NavBar = () => {
-    const {isAuth,city} = useAppdata()
+
+    const {isAuth,city,quantity} = useAppdata()
     const Location = useLocation()
     const isHome = Location.pathname ==='/'
      const [SearchParams, setSearchParams] = useSearchParams()
@@ -29,7 +30,7 @@ const NavBar = () => {
             <Link to ={'/'} className="text-2xl font-bold text-[#E23744] cursor-pointer">Foodify</Link>
             <div className="flex justify center gap-4">
                 <Link to={'/cart'} className="relative"><CgShoppingCart className="h-6 w-6  "/>
-                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-900 text-xs font-semibold text-white">0</span>
+                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-900 text-xs font-semibold text-white">{quantity}</span>
                 </Link>
                 {
                     isAuth ? <Link to={'/account'} className="font-medium text-[#E23744]">Account</Link> : <Link to={'/login'} className="font-medium text-[#E23744]">Account</Link>

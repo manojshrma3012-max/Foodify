@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { serviceurl } from "../main"
+import { restserviceurl, serviceurl } from "../main"
 import axios from "axios"
-import { type AppContext } from '../Types'
+import { type AppContext, type cart } from '../Types'
 import { Toaster } from "react-hot-toast";
 
 const appcontext = createContext<AppContext | undefined>(undefined);
@@ -13,6 +13,10 @@ export const Appprovider = ({children}:{children:React.ReactNode}) => {
     const [loadingLoc, setloadingLoc] = useState(false)
     const [City, setCity] = useState("Unknown")
     const [loading, setloading] = useState(true)
+    const [cart, setcart] = useState<cart[]>([])
+    const [subtotal, setsubtotal] = useState(0)
+    const [quantity, setquantity] = useState(0)
+
 
     async function fetchuser() {
         try {
@@ -32,6 +36,22 @@ export const Appprovider = ({children}:{children:React.ReactNode}) => {
             console.error("Error fetching user:", error);
         } finally {
             setloading(false)
+        }
+    }
+    async function fetchcart(){
+        try {
+            if(!User || User.role!=="customer" ) return
+            const {data} = await axios.get(`${restserviceurl}/api/cart/all`,{
+                headers:{
+                    Authorization:`Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            setcart(data.cart || [])
+            setsubtotal(data.subtotal || 0)
+            setquantity(data.cartlength || 0)
+        } catch (error) {
+            console.log(error)
+            
         }
     }
 
@@ -80,9 +100,14 @@ export const Appprovider = ({children}:{children:React.ReactNode}) => {
             }
         );
     }, [])
+    useEffect(()=>{
+        if(User && User.role ==="customer"){
+            fetchcart()
+        }
+    },[User])
 
     return (
-        <appcontext.Provider value={{ user: User, isAuth, location: Location, loadingLoc, city: City, loading, setUser, setisAuth, setLocation, setloadingLoc, setCity, setloading }}>
+        <appcontext.Provider value={{ user: User, isAuth, location: Location, loadingLoc, city: City, loading, setUser, setisAuth, setLocation, setloadingLoc, setCity, setloading, cart, fetchcart, subtotal, quantity }}>
             {children}
             <Toaster/>
         </appcontext.Provider>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Restaurant } from "../Types";
 import axios from "axios";
 import { restserviceurl } from "../main";
@@ -7,41 +7,42 @@ import toast from "react-hot-toast";
 interface RestaurantProfileProps {
   restaurant: Restaurant;
   userRole?: string;
-  onUpdate:(rest:Restaurant)=>void
+  onUpdate: (rest: Restaurant) => void;
 }
 
 const RestaurantProfile = ({
   restaurant,
   userRole,
-  onUpdate
+  onUpdate,
 }: RestaurantProfileProps) => {
-  
-
   const [name, setName] = useState(restaurant.name);
   const [description, setDescription] = useState(
     restaurant.description || ""
   );
   const [isOpen, setIsOpen] = useState(restaurant.isOpen);
 
-
   const [isEditing, setIsEditing] = useState(false);
 
   const canEdit = userRole === "seller";
-  const toggleRest = async ()=>{
-    try {
-        const {data} = await axios.put(`${restserviceurl}/api/restaurants/status`,{status:!isOpen},{
-            headers:{
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-        })
-        onUpdate(data.restaurant)
-        setIsOpen(data.restaurant.isOpen)
-    } catch (error) {
-        console.log(error)
-        
-    }
-  }
 
+  const toggleRest = async () => {
+    try {
+      const { data } = await axios.put(
+        `${restserviceurl}/api/restaurants/status`,
+        { status: !isOpen },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      onUpdate(data.restaurant);
+      setIsOpen(data.restaurant.isOpen);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     setName(restaurant.name);
@@ -49,103 +50,118 @@ const RestaurantProfile = ({
     setIsOpen(restaurant.isOpen);
   }, [restaurant]);
 
-
-
   const handleSave = async () => {
     try {
-        const {data} = await axios.put(`${restserviceurl}/api/restaurants/update`,{
-            name : name,description:description
-        },{
-            headers:{
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-        })
-        onUpdate(data.restaurant)
-        toast.success("Edited Successfully")
-        
+      const { data } = await axios.put(
+        `${restserviceurl}/api/restaurants/update`,
+        {
+          name,
+          description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      onUpdate(data.restaurant);
+      toast.success("Edited Successfully");
     } catch (error) {
-        
+      console.log(error);
     }
 
-   
     setIsEditing(false);
   };
-
-  // -----------------------------
-  // Cancel editing
-  // -----------------------------
 
   const handleCancel = () => {
     setName(restaurant.name);
     setDescription(restaurant.description || "");
     setIsOpen(restaurant.isOpen);
-
     setIsEditing(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] px-6 py-10">
-      <div className="max-w-5xl mx-auto">
+    <div className="bg-[#faf9f6] px-4 py-5 md:px-6 md:py-6">
+      <div className={`${canEdit ? "max-w-5xl" : "max-w-4xl"} mx-auto`}>
 
         {/* Header */}
-        <div className="mb-8">
-          <p className="text-sm font-medium text-[#b47b4b] uppercase tracking-wider">
+        <div className={`${canEdit ? "mb-8" : "mb-4"}`}>
+          <p className="text-xs font-medium text-[#b47b4b] uppercase tracking-wider">
             Restaurant Profile
           </p>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-[#2f2925] mt-2">
+          <h1
+            className={`font-bold text-[#2f2925] mt-1 ${
+              canEdit
+                ? "text-3xl md:text-4xl"
+                : "text-2xl md:text-3xl"
+            }`}
+          >
             {restaurant.name}
           </h1>
 
-          <p className="text-[#81766e] mt-2">
-            Manage your restaurant information
+          <p className="text-sm text-[#81766e] mt-1">
+            {canEdit
+              ? "Manage your restaurant information"
+              : "Restaurant information"}
           </p>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-[#eee7df]">
+        {/* Restaurant Card */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#eee7df]">
 
-          {/* Restaurant Image */}
-          <div className="relative h-[320px] md:h-[400px]">
-
+          {/* Image */}
+          <div
+            className={`relative ${
+              canEdit
+                ? "h-[320px] md:h-[400px]"
+                : "h-[180px] md:h-[220px]"
+            }`}
+          >
             <img
               src={restaurant.image}
               alt={restaurant.name}
               className="w-full h-full object-cover"
             />
 
-            {/* Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-            {/* Image Information */}
-            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-4">
+            {/* Image bottom content */}
+            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
 
-              <div className="flex-1">
+              <div className="min-w-0">
 
-                {isEditing ? (
+                {isEditing && canEdit ? (
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full max-w-xl text-3xl md:text-4xl font-bold text-white bg-transparent border-b-2 border-white/70 outline-none pb-2"
+                    className="w-full text-2xl md:text-4xl font-bold text-white bg-transparent border-b-2 border-white/70 outline-none pb-1"
                   />
                 ) : (
-                  <h2 className="text-3xl md:text-4xl font-bold text-white">
+                  <h2
+                    className={`font-bold text-white truncate ${
+                      canEdit
+                        ? "text-3xl md:text-4xl"
+                        : "text-2xl md:text-3xl"
+                    }`}
+                  >
                     {restaurant.name}
                   </h2>
                 )}
 
-                <p className="text-white/85 mt-2">
+                <p className="text-white/85 text-xs md:text-sm mt-1 truncate">
                   📍 {restaurant.autolocation?.formattedAddress}
                 </p>
               </div>
 
-              {/* Open / Closed */}
-              {isEditing ? (
+              {/* Status */}
+              {isEditing && canEdit ? (
                 <button
                   type="button"
                   onClick={toggleRest}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold ${
                     isOpen
                       ? "bg-green-500 text-white"
                       : "bg-red-500 text-white"
@@ -155,7 +171,7 @@ const RestaurantProfile = ({
                 </button>
               ) : (
                 <span
-                  className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold ${
                     restaurant.isOpen
                       ? "bg-green-500 text-white"
                       : "bg-red-500 text-white"
@@ -164,41 +180,40 @@ const RestaurantProfile = ({
                   {restaurant.isOpen ? "Open" : "Closed"}
                 </span>
               )}
-
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-6 md:p-8">
+          {/* Details */}
+          <div className={`${canEdit ? "p-6 md:p-8" : "p-4 md:p-5"}`}>
 
-            {/* Verification + Edit */}
-            <div className="flex items-center justify-between mb-8">
+            {/* Verification + Seller controls */}
+            <div className="flex items-center justify-between">
 
               <div>
-                <p className="text-sm text-[#958b83]">
-                  Verification Status
+                <p className="text-xs text-[#958b83]">
+                  Verification
                 </p>
 
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-1">
 
                   <span
-                    className={`w-2.5 h-2.5 rounded-full ${
+                    className={`w-2 h-2 rounded-full ${
                       restaurant.isverified
                         ? "bg-green-500"
                         : "bg-yellow-500"
                     }`}
                   />
 
-                  <span className="font-semibold text-[#3b342f]">
+                  <span className="text-sm font-semibold text-[#3b342f]">
                     {restaurant.isverified
-                      ? "Verified Restaurant"
+                      ? "Verified"
                       : "Verification Pending"}
                   </span>
 
                 </div>
               </div>
 
-              {/* Editing buttons */}
+              {/* Seller only */}
               {canEdit && (
                 <div className="flex gap-3">
 
@@ -213,14 +228,14 @@ const RestaurantProfile = ({
                     <>
                       <button
                         onClick={handleCancel}
-                        className="px-5 py-2.5 rounded-xl border border-[#ded5cc] text-[#5c4033] font-medium hover:bg-[#faf9f6] transition"
+                        className="px-5 py-2.5 rounded-xl border border-[#ded5cc] text-[#5c4033] font-medium"
                       >
                         Cancel
                       </button>
 
                       <button
                         onClick={handleSave}
-                        className="px-5 py-2.5 rounded-xl bg-[#5c4033] text-white font-medium hover:bg-[#493127] transition"
+                        className="px-5 py-2.5 rounded-xl bg-[#5c4033] text-white font-medium"
                       >
                         Save Changes
                       </button>
@@ -229,85 +244,73 @@ const RestaurantProfile = ({
 
                 </div>
               )}
-
             </div>
 
             {/* Description */}
-            <div className="border-t border-[#eee7df] pt-6">
+            <div className="border-t border-[#eee7df] mt-4 pt-4">
 
-              <h3 className="text-lg font-semibold text-[#3b342f]">
+              <h3 className="text-base font-semibold text-[#3b342f]">
                 About Restaurant
               </h3>
 
-              {isEditing ? (
+              {isEditing && canEdit ? (
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="w-full mt-3 p-4 rounded-xl border border-[#ded5cc] bg-[#faf9f6] text-[#3b342f] outline-none focus:border-[#5c4033] resize-none"
+                  className="w-full mt-3 p-4 rounded-xl border border-[#ded5cc] bg-[#faf9f6] text-[#3b342f] outline-none resize-none"
                   placeholder="Describe your restaurant..."
                 />
               ) : (
-                <p className="text-[#766c65] mt-3 leading-7">
+                <p className="text-sm text-[#766c65] mt-1.5 leading-6">
                   {restaurant.description ||
                     "No description has been added yet."}
                 </p>
               )}
-
             </div>
 
-            {/* Restaurant Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+            {/* Contact + Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
 
-              {/* Phone */}
-              <div className="bg-[#faf9f6] rounded-2xl p-5">
-
-                <p className="text-sm text-[#958b83]">
+              <div className="bg-[#faf9f6] rounded-xl p-3.5">
+                <p className="text-xs text-[#958b83]">
                   Contact Number
                 </p>
 
-                <p className="text-[#3b342f] font-semibold mt-2">
+                <p className="text-sm text-[#3b342f] font-semibold mt-1">
                   📞{" "}
                   {restaurant.PhoneNo
                     ? String(restaurant.PhoneNo)
                     : "Not provided"}
                 </p>
-
               </div>
 
-              {/* Location */}
-              <div className="bg-[#faf9f6] rounded-2xl p-5">
-
-                <p className="text-sm text-[#958b83]">
+              <div className="bg-[#faf9f6] rounded-xl p-3.5">
+                <p className="text-xs text-[#958b83]">
                   Location
                 </p>
 
-                <p className="text-[#3b342f] font-semibold mt-2">
+                <p className="text-sm text-[#3b342f] font-semibold mt-1">
                   📍{" "}
                   {restaurant.autolocation?.formattedAddress ||
                     "Not available"}
                 </p>
-
               </div>
 
             </div>
 
             {/* Coordinates */}
             {restaurant.autolocation?.coordinates && (
-              <div className="mt-5 bg-[#faf9f6] rounded-2xl p-5">
-
-                <p className="text-sm text-[#958b83]">
+              <div className="mt-3 bg-[#faf9f6] rounded-xl p-3.5">
+                <p className="text-xs text-[#958b83]">
                   Coordinates
                 </p>
 
-                <p className="text-[#3b342f] font-medium mt-2">
-                  Longitude:{" "}
-                  {restaurant.autolocation.coordinates[0]}
+                <p className="text-xs text-[#3b342f] font-medium mt-1">
+                  Longitude: {restaurant.autolocation.coordinates[0]}
                   {"  |  "}
-                  Latitude:{" "}
-                  {restaurant.autolocation.coordinates[1]}
+                  Latitude: {restaurant.autolocation.coordinates[1]}
                 </p>
-
               </div>
             )}
 

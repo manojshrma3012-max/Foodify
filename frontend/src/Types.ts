@@ -1,3 +1,5 @@
+import type React from "react"
+
 export interface User {
     _id : string,
     name : string,
@@ -39,7 +41,11 @@ export interface AppContext {
     setLocation : React.Dispatch<React.SetStateAction<LocationData | null>>,
     setloadingLoc : React.Dispatch<React.SetStateAction<boolean>>,
     setCity : React.Dispatch<React.SetStateAction<string>>,
-    setloading : React.Dispatch<React.SetStateAction<boolean>>
+    setloading : React.Dispatch<React.SetStateAction<boolean>>,
+    cart : cart[] | []
+    fetchcart : ()=>Promise<void>
+    subtotal : number,
+    quantity : number
 }
 export interface menuItems {
     _id:string
@@ -52,16 +58,11 @@ export interface menuItems {
     createdAt:Date,
     updatedAt:Date
 }
-// "message": "tiem added successfully",
-//     "item": {
-//         "restID": "6aa7fe57cdf0cf6dca7c3be8",
-//         "name": "Butter Chicken",
-//         "image": "https://res.cloudinary.com/gmc51ylf/image/upload/v1789497913/restaurants/hfhxencitzo5cdirlje2.jpg",
-//         "description": "Freshly Prepared",
-//         "price": 600,
-//         "inStock": true,
-//         "_id": "6aa9923a0429642d1a39a037",
-//         "createdAt": "2026-09-15T18:45:14.297Z",
-//         "updatedAt": "2026-09-15T18:45:14.297Z",
-//         "__v": 0
-//     }
+export interface cart{
+    userid : string
+    restid : string
+    itemid : string
+    quantity : number
+    createdAt : Date
+    updatedAt:Date 
+}
