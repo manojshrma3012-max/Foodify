@@ -46,6 +46,7 @@ export const Appprovider = ({children}:{children:React.ReactNode}) => {
                     Authorization:`Bearer ${localStorage.getItem("token")}`
                 }
             })
+            console.log(data)
             setcart(data.cart || [])
             setsubtotal(data.subtotal || 0)
             setquantity(data.cartlength || 0)

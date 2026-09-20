@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useAppdata } from "../context/AppContext";
 import { useState } from "react";
+import axios from "axios";
+import { restserviceurl } from "../main";
+import toast from "react-hot-toast";
 
 const Cart = () => {
   const { cart, subtotal, quantity, fetchcart } = useAppdata();
@@ -10,11 +13,89 @@ const Cart = () => {
   const [loadingitem, setloadingitem] = useState<string | null>(null);
   const [clearingcart, setclearingcart] = useState(false);
 
-  // Temporary empty cart check
+  const deliveryfee = subtotal > 250 ? 49 : 0;
+  const platformfee = 7;
+  const grandtotal = subtotal + deliveryfee + platformfee;
+
+  // Increase quantity
+  const increaseQty = async (itemid: string) => {
+    try {
+      setloadingitem(itemid);
+
+      await axios.put(
+        `${restserviceurl}/api/cart/inc`,
+        {
+          itemid,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      await fetchcart();
+    } catch (error) {
+      console.log(error);
+      toast.error("Something Went Wrong");
+    } finally {
+      setloadingitem(null);
+    }
+  };
+
+  // Decrease quantity
+  const decreaseQty = async (itemid: string) => {
+    try {
+      setloadingitem(itemid);
+
+      await axios.put(
+        `${restserviceurl}/api/cart/dec`,
+        {
+          itemid,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      await fetchcart();
+    } catch (error) {
+      console.log(error);
+      toast.error("Something Went Wrong");
+    } finally {
+      setloadingitem(null);
+    }
+  };
+
+  // Clear cart
+  const clearcart = async () => {
+    setclearingcart(true);
+
+    try {
+      await axios.delete(`${restserviceurl}/api/cart/clearcart`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      await fetchcart();
+
+      toast.success("Cart cleared");
+    } catch (error) {
+      console.log(error);
+      toast.error("Something Went Wrong");
+    } finally {
+      setclearingcart(false);
+    }
+  };
+
+  // Empty cart
   if (!cart || cart.length === 0) {
     return (
       <div className="min-h-screen bg-[#faf9f6] px-4 py-10">
-        <div className="max-w-5xl mx-auto">
+        <div className="mx-auto max-w-5xl">
 
           {/* Header */}
           <div className="mb-8">
@@ -27,7 +108,7 @@ const Cart = () => {
             </h1>
           </div>
 
-          {/* Empty cart */}
+          {/* Empty Cart */}
           <div className="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border border-[#eee7df] bg-white shadow-sm">
 
             <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#faf3ed]">
@@ -55,14 +136,25 @@ const Cart = () => {
       </div>
     );
   }
-  const rest = cart[0].restid
-  const deliveryfee = subtotal <250 ? 49 : 0
+
+  /*
+    Since your cart only contains items from one restaurant,
+    we can take the restaurant from the first cart item.
+  */
+  const restaurant: any = cart[0].restid;
+  console.log(restaurant)
+
   return (
     <div className="min-h-screen bg-[#faf9f6] px-4 py-8 md:px-6">
+
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
+
+        {/* ================= HEADER ================= */}
+
         <div className="mb-8 flex items-end justify-between">
+
           <div>
+
             <p className="text-sm font-medium uppercase tracking-wider text-[#b47b4b]">
               Your Cart
             </p>
@@ -74,6 +166,7 @@ const Cart = () => {
             <p className="mt-1 text-sm text-[#81766e]">
               Review your items before checkout
             </p>
+
           </div>
 
           {/* Quantity */}
@@ -84,29 +177,42 @@ const Cart = () => {
         </div>
 
 
-        {/* Main layout */}
+        {/* ================= MAIN LAYOUT ================= */}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-          {/* Cart Items */}
+
+          {/* ================= LEFT SIDE ================= */}
+
           <div className="space-y-4 lg:col-span-2">
 
-            {/* Restaurant */}
+
+            {/* ================= RESTAURANT ================= */}
+
             <div className="rounded-2xl border border-[#eee7df] bg-white p-5 shadow-sm">
 
               <div className="flex items-center justify-between">
 
                 <div>
+
                   <p className="text-xs uppercase tracking-wide text-[#958b83]">
                     Restaurant
                   </p>
 
                   <h2 className="mt-1 text-lg font-bold text-[#3b342f]">
-                    Restaurant Name
+                    {restaurant.name}
                   </h2>
+
                 </div>
 
-                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-                  Open
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    restaurant.isOpen
+                      ? "bg-green-50 text-green-700"
+                      : "bg-red-50 text-red-600"
+                  }`}
+                >
+                  {restaurant.isOpen ? "Open" : "Closed"}
                 </span>
 
               </div>
@@ -114,145 +220,152 @@ const Cart = () => {
             </div>
 
 
-            {/* Item */}
-            <div className="rounded-2xl border border-[#eee7df] bg-white p-4 shadow-sm">
+            {/* ================= CART ITEMS ================= */}
 
-              <div className="flex gap-4">
+            {cart.map((cartItem: any) => {
 
-                {/* Image */}
-                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                  <div className="flex h-full items-center justify-center text-3xl">
-                    🍔
-                  </div>
-                </div>
+              /*
+                cartItem.itemid contains the populated item document.
+                Example:
 
+                cartItem.itemid = {
+                  _id: "...",
+                  name: "Burger",
+                  price: 200
+                }
+              */
 
-                {/* Information */}
-                <div className="flex min-w-0 flex-1 flex-col justify-between">
+              const item = cartItem.itemid;
 
-                  <div className="flex justify-between gap-3">
+              const itemId = item._id;
 
-                    <div>
-                      <h3 className="font-semibold text-[#3b342f]">
-                        Menu Item
-                      </h3>
+              return (
 
-                      <p className="mt-1 line-clamp-2 text-sm text-[#81766e]">
-                        Delicious menu item description goes here.
-                      </p>
-                    </div>
+                <div
+                  key={cartItem._id}
+                  className="rounded-2xl border border-[#eee7df] bg-white p-4 shadow-sm"
+                >
 
-                    <p className="shrink-0 font-bold text-[#b47b4b]">
-                      ₹500
-                    </p>
-
-                  </div>
+                  <div className="flex gap-4">
 
 
-                  {/* Quantity controls */}
-                  <div className="mt-3 flex items-center justify-between">
+                    {/* ================= IMAGE ================= */}
 
-                    <div className="flex items-center rounded-lg border border-[#ded5cc]">
+                    <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
 
-                      <button
-                        className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6]"
-                      >
-                        −
-                      </button>
-
-                      <span className="border-x border-[#ded5cc] px-4 py-1.5 text-sm font-medium">
-                        1
-                      </span>
-
-                      <button
-                        className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6]"
-                      >
-                        +
-                      </button>
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-3xl">
+                          🍔
+                        </div>
+                      )}
 
                     </div>
 
-                    <button
-                      className="text-xs font-medium text-red-500 hover:text-red-600"
-                    >
-                      Remove
-                    </button>
 
-                  </div>
+                    {/* ================= ITEM INFORMATION ================= */}
 
-                </div>
-
-              </div>
-
-            </div>
+                    <div className="flex min-w-0 flex-1 flex-col justify-between">
 
 
-            {/* Another static item */}
-            <div className="rounded-2xl border border-[#eee7df] bg-white p-4 shadow-sm">
+                      {/* Item details */}
 
-              <div className="flex gap-4">
+                      <div className="flex justify-between gap-3">
 
-                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                  <div className="flex h-full items-center justify-center text-3xl">
-                    🍕
-                  </div>
-                </div>
+                        <div>
 
-                <div className="flex min-w-0 flex-1 flex-col justify-between">
+                          <h3 className="font-semibold text-[#3b342f]">
+                            {item.name}
+                          </h3>
 
-                  <div className="flex justify-between gap-3">
+                          <p className="mt-1 line-clamp-2 text-sm text-[#81766e]">
+                            {item.description}
+                          </p>
 
-                    <div>
-                      <h3 className="font-semibold text-[#3b342f]">
-                        Pizza
-                      </h3>
+                        </div>
 
-                      <p className="mt-1 text-sm text-[#81766e]">
-                        Freshly prepared pizza.
-                      </p>
+
+                        {/* Price */}
+
+                        <p className="shrink-0 font-bold text-[#b47b4b]">
+                          ₹{item.price}
+                        </p>
+
+                      </div>
+
+
+                      {/* ================= QUANTITY CONTROLS ================= */}
+
+                      <div className="mt-3 flex items-center justify-between">
+
+
+                        <div className="flex items-center rounded-lg border border-[#ded5cc]">
+
+
+                          {/* DECREASE */}
+
+                          <button
+                            disabled={loadingitem === itemId}
+                            onClick={() => decreaseQty(itemId)}
+                            className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            −
+                          </button>
+
+
+                          {/* QUANTITY */}
+
+                          <span className="border-x border-[#ded5cc] px-4 py-1.5 text-sm font-medium">
+                            {loadingitem === itemId
+                              ? "..."
+                              : cartItem.quantity}
+                          </span>
+
+
+                          {/* INCREASE */}
+
+                          <button
+                            disabled={loadingitem === itemId}
+                            onClick={() => increaseQty(itemId)}
+                            className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            +
+                          </button>
+
+                        </div>
+
+
+                        {/* REMOVE */}
+
+                        <button
+                          className="text-xs font-medium text-red-500 hover:text-red-600"
+                        >
+                          Remove
+                        </button>
+
+                      </div>
+
                     </div>
 
-                    <p className="shrink-0 font-bold text-[#b47b4b]">
-                      ₹450
-                    </p>
-
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between">
-
-                    <div className="flex items-center rounded-lg border border-[#ded5cc]">
-
-                      <button className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6]">
-                        −
-                      </button>
-
-                      <span className="border-x border-[#ded5cc] px-4 py-1.5 text-sm font-medium">
-                        2
-                      </span>
-
-                      <button className="px-3 py-1.5 text-[#5c4033] hover:bg-[#faf9f6]">
-                        +
-                      </button>
-
-                    </div>
-
-                    <button className="text-xs font-medium text-red-500 hover:text-red-600">
-                      Remove
-                    </button>
-
                   </div>
 
                 </div>
 
-              </div>
+              );
+            })}
 
-            </div>
 
+            {/* ================= CLEAR CART ================= */}
 
-            {/* Clear cart */}
             <div className="flex justify-end pt-1">
 
               <button
+                onClick={clearcart}
                 disabled={clearingcart}
                 className="text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-50"
               >
@@ -264,31 +377,70 @@ const Cart = () => {
           </div>
 
 
-          {/* Order Summary */}
+          {/* ================= ORDER SUMMARY ================= */}
+
           <div className="lg:col-span-1">
 
             <div className="sticky top-6 rounded-2xl border border-[#eee7df] bg-white p-6 shadow-sm">
+
 
               <h2 className="text-lg font-bold text-[#3b342f]">
                 Order Summary
               </h2>
 
+
               <div className="mt-5 space-y-3 text-sm">
 
+
+                {/* Items */}
+
                 <div className="flex justify-between text-[#81766e]">
+
                   <span>Items</span>
+
                   <span>{quantity}</span>
+
                 </div>
 
+
+                {/* Subtotal */}
+
                 <div className="flex justify-between text-[#81766e]">
+
                   <span>Subtotal</span>
+
                   <span>₹{subtotal}</span>
+
                 </div>
 
+
+                {/* Delivery */}
+
                 <div className="flex justify-between text-[#81766e]">
+
                   <span>Delivery</span>
-                  <span>₹40</span>
+
+                  <span>
+                    ₹{deliveryfee}
+                  </span>
+
                 </div>
+
+
+                {/* Platform fee */}
+
+                <div className="flex justify-between text-[#81766e]">
+
+                  <span>Platform Fee</span>
+
+                  <span>
+                    ₹{platformfee}
+                  </span>
+
+                </div>
+
+
+                {/* Total */}
 
                 <div className="border-t border-[#eee7df] pt-4">
 
@@ -299,7 +451,7 @@ const Cart = () => {
                     </span>
 
                     <span className="text-xl font-bold text-[#5c4033]">
-                      ₹{subtotal + 40}
+                      ₹{grandtotal}
                     </span>
 
                   </div>
@@ -309,13 +461,18 @@ const Cart = () => {
               </div>
 
 
-              {/* Checkout */}
+              {/* ================= CHECKOUT ================= */}
+
               <button
+              disabled = {!restaurant.isOpen}
                 onClick={() => navigate("/checkout")}
                 className="mt-6 w-full rounded-xl bg-[#5c4033] py-3.5 text-sm font-semibold text-white transition hover:bg-[#493127]"
               >
-                Proceed to Checkout
+                {restaurant.isOpen ? "Proceed To Checkout" : "Restaurant is Closed"}
               </button>
+
+
+              {/* Continue Shopping */}
 
               <button
                 onClick={() => navigate("/")}
@@ -329,7 +486,9 @@ const Cart = () => {
           </div>
 
         </div>
+
       </div>
+
     </div>
   );
 };
