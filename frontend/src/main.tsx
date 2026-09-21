@@ -3,6 +3,7 @@ import './index.css'
 import {GoogleOAuthProvider} from '@react-oauth/google'
 import App from './App.tsx'
 import { Appprovider } from './context/AppContext.tsx'
+import 'leaflet/dist/leaflet.css'
 export const serviceurl = "http://localhost:5000"
 export const restserviceurl = "http://localhost:5001"
 
