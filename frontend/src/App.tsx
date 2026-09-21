@@ -13,6 +13,7 @@ import Restaurants from './pages/Restaurants'
 import Restpage from './pages/Restpage'
 import Cart from './pages/Cart'
 import Address from './pages/Address'
+import Checkout from './pages/Checkout'
 const App = () => {
   const {user} = useAppdata()
   if(user && user?.role==="seller"){
@@ -28,6 +29,7 @@ const App = () => {
       <Route element = {<Protectedroutes/>}>
        <Route path='/' element={<Home/>}/> 
        <Route path='/address' element={<Address/>}/> 
+       <Route path='/checkout' element={<Checkout/>}/> 
        <Route path='/restaurant/:id' element={<Restpage/>}/> 
        <Route path='/cart' element={<Cart/>}/> 
        <Route path = 'select-role' element={<SelectRoles/>}></Route>
