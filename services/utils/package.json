@@ -10,12 +10,15 @@
     "dev": " npm run build && concurrently \"tsc --watch\" \"node --watch dist/index.js\""
   },
   "dependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/multer": "^2.2.0",
+    "amqplib": "^2.0.1",
     "cloudinary": "^2.11.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "multer": "^2.4.0"
+    "multer": "^2.4.0",
+    "razorpay": "^2.9.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
