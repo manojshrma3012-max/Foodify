@@ -27,7 +27,7 @@ interface Address{
   mobile:number
 }
 const Checkout = () => {
-  const {cart,subtotal,quantity} = useAppdata()
+  const {cart,subtotal,quantity,fetchcart} = useAppdata()
   const [loadingaddress, setloadingaddress] = useState(false)
   const [Addresses, setAddresses] = useState<Address[]>([])
   const [selectedaddressid, setselectedaddressid] = useState<string|null>(null)
@@ -77,7 +77,6 @@ const Checkout = () => {
       const {data} = await axios.post(`${restserviceurl}/api/order/create-order`,{
         paymentmethod:paymethod,
         addressid : selectedaddressid,
-        distance: 0,
       },{
         headers:{
           Authorization:`Bearer ${localStorage.getItem("token")}`
@@ -104,14 +103,18 @@ const Checkout = () => {
       })
       
       console.log(data)
-      const {razorpayid,key} = data
+      const {razorpayorderid,key} = data
+      console.log("Razorpay create response:", data);
+      console.log("Razorpay order ID:", razorpayorderid);
+      console.log("Application order ID:", orderId);
+
     const options = {
     description: 'Order Payment',
     currency: 'INR',
     key: key,
     amount: amount,
     name: 'Foodify',
-    order_id: razorpayid,
+    order_id: razorpayorderid,
     handler:async(response:any)=>{
       console.log(response)
       try {
@@ -121,11 +124,10 @@ const Checkout = () => {
           razorpay_signature : response.razorpay_signature,
           orderid:orderId
         })
-        toast.success("Payment Successfull")
+        toast.success("Payment Successful")
         navigate('/paymentsuccess/'+response.razorpay_payment_id)
       } catch (error) {
         toast.error("payment verification failed")
-
       }
 
     },

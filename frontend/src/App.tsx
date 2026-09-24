@@ -14,6 +14,7 @@ import Restpage from './pages/Restpage'
 import Cart from './pages/Cart'
 import Address from './pages/Address'
 import Checkout from './pages/Checkout'
+import PaymentSuccess from './pages/PaymentSuccess'
 const App = () => {
   const {user} = useAppdata()
   if(user && user?.role==="seller"){
@@ -28,6 +29,7 @@ const App = () => {
        <Route path='/login' element={<Login/>}/></Route>
       <Route element = {<Protectedroutes/>}>
        <Route path='/' element={<Home/>}/> 
+       <Route path='/paymentsuccess/:id' element={<PaymentSuccess/>}/> 
        <Route path='/address' element={<Address/>}/> 
        <Route path='/checkout' element={<Checkout/>}/> 
        <Route path='/restaurant/:id' element={<Restpage/>}/> 
