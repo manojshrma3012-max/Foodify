@@ -32,21 +32,22 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
     }
     const cartitems = await cart.find({
         userid:user.id
-    }).populate<{itemid : menuItems}>("itemid").populate<{restid : Irestaurant}>("restid")
+    }).populate("itemid").populate("restid")
     if(cartitems.length===0){
         return res.status(400).json({
             message : "Cart is Empty"
         })
     }
     console.log(cartitems)
-    const firstcartitem = cartitems.at(0)
+    const firstcartitem = cartitems[0]
     if(!firstcartitem || !firstcartitem.restid){
         return res.status(400).json({
             message : "Invalid Cart data"
         })
     }
     const restid = firstcartitem.restid._id
-    const rest = await restaurant.findById({restid})
+    console.log(restid)
+    const rest = await restaurant.findById(restid)
     if(!rest){
         return res.status(404).json({
             message : "No Restaurant Found"
@@ -59,7 +60,7 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
     }
     let subtotal = 0;
     const orderitem = cartitems.map((cart)=>{
-        const item = cart.itemid
+        const item:any = cart.itemid
         if(!item){
             throw new Error("Invalid Cart")
         }
@@ -79,6 +80,7 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
     const [longitude, latitude] = address.location.coordinates
     const rideramount = Math.ceil(distance)*17
     const order = await Order.create({
+        subtotal,
         userId:user.id.toString(),
         restid:rest._id.toString(),
         restname:rest.name,
@@ -98,12 +100,11 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
         paymentstatus:"pending",
         status:"placed",
         expireat:expireat
-
     })
-    await cart.deleteMany({userid:user.id})
+    // await cart.deleteMany({userid:user.id})
     return res.status(201).json({
         message : "Order Created Successfully",
-        OrderId : order._id.toString(),
+        orderId : order._id.toString(),
         amount : totalamount
     })
 
@@ -113,6 +114,22 @@ export const fetchorderforpayment = TryCatch(async(req,res)=>{
         return res.status(403).json({
             message : "forbiddden"
         })
-
     }
+    const order = await Order.findById(req.params.id)
+    if(!order){
+        return res.status(400).json({
+            message : "order not found"
+        })
+    }
+    if(order.paymentstatus !== "pending"){
+        return res.status(400).json({
+            message : "Payment Done"
+        })
+    }
+    res.json({
+        orderid : order._id,
+        amount : order.totalamount,
+        currency :"INR"
+    })
+
 })

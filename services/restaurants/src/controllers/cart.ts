@@ -135,7 +135,6 @@ export const decreament = TryCatch(async(req:AuthenticatedRequest,res)=>{
     })
 
 })
-
 export const clearcart = TryCatch(async(req:AuthenticatedRequest,res)=>{
     if(!req.user){
         return res.status(401).json({
