@@ -3,6 +3,7 @@ import cors from 'cors'
 import uploadroutes from './routes/cloudinary.js'
 import dotenv from 'dotenv'
 import { connectrabbitmq } from './config/rabbitmq.js'
+import paymentroutes from './routes/payment.js'
 dotenv.config()
 const app = express()
  connectrabbitmq()
@@ -17,6 +18,7 @@ dotenv.config()
 
 
 app.use('/api',uploadroutes)
+app.use('/api/payment',paymentroutes)
 
 
 
