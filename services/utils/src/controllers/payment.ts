@@ -29,7 +29,7 @@ export const createrazorpayorder = async (req: Request, res: Response) => {
 
     console.log("Razorpay order:", razorpayorder)
 
-    res.json({
+    res.status(200).json({
       razorpayorderid: razorpayorder.id,
 
       // IMPORTANT: this is the KEY ID, not SECRET

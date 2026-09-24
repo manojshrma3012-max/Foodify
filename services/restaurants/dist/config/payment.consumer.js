@@ -1,3 +1,4 @@
+import cart from "../models/cart.js";
 import { Order } from "../models/orders.js";
 import { getchannel } from "./rabbitmq.js";
 export const paymentconsumer = async () => {
@@ -29,6 +30,8 @@ export const paymentconsumer = async () => {
                 channel.ack(msg);
                 return;
             }
+            await cart.deleteMany({ userid: order.userId });
+            console.log(order);
             console.log("rest queue order placed", orderid);
             channel.ack(msg);
         }

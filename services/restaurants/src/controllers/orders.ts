@@ -15,7 +15,7 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
             message :"Unauthorized"
         })
     }
-    const {paymentmethod,addressid,distance} = req.body
+    const {paymentmethod,addressid} = req.body
     if(!addressid){
         return res.status(400).json({
             message : "address required"
@@ -30,6 +30,29 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
             message : "address not found"
         })
     }
+    const getDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 6371;
+
+    const dlat = ((lat2 - lat1) * Math.PI) / 180;
+    const dlon = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dlat / 2) * Math.sin(dlat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dlon / 2) *
+        Math.sin(dlon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return +(R * c).toFixed(2);
+  };
+
     const cartitems = await cart.find({
         userid:user.id
     }).populate("itemid").populate("restid")
@@ -58,6 +81,12 @@ export const createorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
             message : "Restaurant Is closed"
         })
     }
+    const distance = getDistance(
+              address.location.coordinates[1],
+              address.location.coordinates[0],
+              rest.autolocation.coordinates[1],
+              rest.autolocation.coordinates[0]
+            );
     let subtotal = 0;
     const orderitem = cartitems.map((cart)=>{
         const item:any = cart.itemid
