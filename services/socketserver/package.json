@@ -1,0 +1,27 @@
+{
+  "name": "socketserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+     "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": " npm run build && concurrently \"tsc --watch\" \"node --watch dist/index.js\""
+  },
+  "keywords": [],
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "@types/socket.io": "^3.0.1",
+    "concurrently": "^10.0.5",
+    "typescript": "^7.0.2"
+  }
+}
