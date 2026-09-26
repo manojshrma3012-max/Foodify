@@ -3,6 +3,7 @@ import Address from "../models/Address.js";
 import cart from "../models/cart.js";
 import restaurant from "../models/restaurant.js";
 import { Order } from "../models/orders.js";
+import axios from "axios";
 export const createorder = TryCatch(async (req, res) => {
     const user = req.user;
     if (!user) {
@@ -176,9 +177,79 @@ export const updateorderstatus = TryCatch(async (req, res) => {
         });
     }
     const order = await Order.findById(orderid);
-    if (!ordder) {
+    if (!order) {
         return res.status(404).json({
             message: "order not found"
         });
     }
+    if (order.paymentstatus !== "paid") {
+        return res.status(404).json({
+            message: "order not completed"
+        });
+    }
+    const rest = await restaurant.findById(order.restid);
+    if (!rest) {
+        return res.status(404).json({
+            message: "restaurant not found"
+        });
+    }
+    if (rest.ownerId !== user.id.toString()) {
+        return res.status(401).json({
+            message: "Not Authorised"
+        });
+    }
+    order.status = status;
+    await order.save();
+    await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+        event: "order:updated",
+        room: `user:${order.userId}`,
+        payload: {
+            orderid: order._id,
+            status: order.status
+        }
+    }, {
+        headers: {
+            "x-internal-key": process.env.INTERNAL_KEY
+        }
+    });
+    //Now assign rider
+    res.json({
+        message: "order status updated succesfully",
+        order
+    });
+});
+export const getmyorders = TryCatch(async (req, res) => {
+    const user = req.user;
+    if (!user) {
+        return res.status(401).json({
+            message: "Unauthorised"
+        });
+    }
+    const orders = await Order.find({
+        userId: user.id,
+        paymentstatus: "paid"
+    }).sort({ createdAt: -1 });
+    res.json({
+        orders
+    });
+});
+export const fetchsingleorder = TryCatch(async (req, res) => {
+    const user = req.user;
+    if (!user) {
+        return res.status(401).json({
+            message: "Unauthorised"
+        });
+    }
+    const order = await Order.findById(req.params.orderid);
+    if (!order) {
+        return res.status(404).json({
+            message: "order not found"
+        });
+    }
+    if (order.userId !== req.user?.id.toString()) {
+        return res.status(401).json({
+            message: "unauthorised"
+        });
+    }
+    res.json(order);
 });

@@ -1,3 +1,4 @@
+import axios from "axios";
 import cart from "../models/cart.js";
 import { Order } from "../models/orders.js";
 import { getchannel } from "./rabbitmq.js";
@@ -30,6 +31,17 @@ export const paymentconsumer = async () => {
                 channel.ack(msg);
                 return;
             }
+            await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+                event: "order:New",
+                room: `restaurant:${order.restid}`,
+                payload: {
+                    orderid: order._id,
+                }
+            }, {
+                headers: {
+                    "x-internal-key": process.env.INTERNAL_KEY
+                }
+            });
             await cart.deleteMany({ userid: order.userId });
             console.log(order);
             console.log("rest queue order placed", orderid);
