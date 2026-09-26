@@ -162,3 +162,51 @@ export const fetchorderforpayment = TryCatch(async(req,res)=>{
     })
 
 })
+
+
+export const fetchRestaurantOrders = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const user = req.user
+    const {restid} = req.params
+    if(!user){
+        return res.status(401).json({
+            message : "Unauthorised"
+        })
+    }
+    if(!restid){
+        return res.status(400).json({
+            message : "No rest found"
+        })
+    }
+    const limit:number  = req.query.limit ? Number(req.query.limit)  : 0
+    const orders = await Order.find({restid:restid,paymentstatus : "paid"}).sort({createdAt:-1}).limit(limit)
+    return res.json({
+        success:true,
+        count:orders.length,
+        orders
+    })
+})
+const ALLOWED_STATUS = ["accepted","preparing","ready_for_rider"] as const
+export const updateorderstatus = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const user = req.user
+    const {orderid} = req.params
+    const {status} = req.body
+   
+    if(!user){
+        return res.status(401).json({
+            message : "Unauthorised"
+        })
+    }
+    if(!ALLOWED_STATUS.includes(status)){
+        return res.status(400).json({
+            message : "Invalid Order Status"
+        })
+    }
+    const order = await Order.findById(orderid)
+    if(!ordder){
+        return res.status(404).json({
+            message : "order not found"
+        })
+    }
+   
+    
+})
