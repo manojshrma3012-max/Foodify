@@ -13,6 +13,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
 
     const {isAuth} = useAppdata()
     const socketref = useRef<Socket|null>(null)
+    const [socketInstance, setSocketInstance] = useState<Socket|null>(null)
     useEffect(()=>{
         if(!isAuth){
             socketref.current?.disconnect()
@@ -28,13 +29,15 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         })
         socketref.current = socket
         socket.on("connect",()=>{
+            setSocketInstance(socket)
             console.log("Socket Connected",socket.id)
         })
         socket.on("disconnect",()=>{
+            setSocketInstance(current => current === socket ? null : current)
             console.log("Socket disConnected",socket.id)
         })
         socket.on("connect_error",(err)=>{
-            console.log(`socker error : ${err.message}`)
+            console.error(`Socket connection failed: ${err.message}`)
         })
         return ()=>{
             socket.disconnect()
@@ -51,6 +54,6 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         </SocketContext.Provider>
     )
 }
-export const usesocket = ()=>{
+export const useSocket = ()=>{
     return useContext(SocketContext)
 }
