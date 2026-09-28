@@ -66,3 +66,50 @@ export interface cart{
     createdAt : Date
     updatedAt:Date 
 }
+
+export interface ordertype{
+_id:string,
+  userId: string;
+  restid: string;
+  restname: string;
+  riderId?: string | null;
+  riderphoneno: number | null;
+  ridername: string | null;
+  distance: number;
+  rideramount: number;
+
+  items: {
+    itemid: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }[];
+
+  subtotal: number;
+  deliveryfee: number;
+  platformfee: number;
+  totalamount: number;
+
+  addressid: string;
+
+  deliveryaddress: {
+    formattedAddredd: string;
+    mobileno: number;
+    latitude: number;
+    longitude: number;
+  };
+  status:
+    | "placed"
+    | "accepted"
+    | "preparing"
+    | "ready_for_rider"
+    | "rider-assigned"
+    | "picked-up"
+    | "delivered"
+    | "cancelled";
+
+  paymentmethod: "razorpay" | "stripe";
+  paymentstatus: "pending" | "paid" | "failed";
+  createdAt: string;
+  updatedAt: string;
+}

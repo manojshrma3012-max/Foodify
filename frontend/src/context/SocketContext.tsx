@@ -16,6 +16,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     const [socketInstance, setSocketInstance] = useState<Socket|null>(null)
     useEffect(()=>{
         if(!isAuth){
+            console.log(isAuth)
             socketref.current?.disconnect()
             socketref.current = null
             return

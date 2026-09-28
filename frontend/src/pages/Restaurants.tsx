@@ -8,6 +8,7 @@ import { useAppdata } from "../context/AppContext"
 import Menuitems from "../components/Menuitems"
 import AddMenuitems from "../components/AddMenuitems"
 import toast from "react-hot-toast"
+import RestauranOrders from "../components/RestauranOrders"
 type sellerTab = "menu" | "sales" | "add-items"
 
 
@@ -71,6 +72,7 @@ const Restaurants = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 space-y-6">
       <RestaurantProfile restaurant={Restaurant} userRole={user?.role} onUpdate={setRestaurant} />
+      <RestauranOrders restid={Restaurant._id}/>
 
       <div className="rounded-lg border bg-white shadow-sm">
         <div className="flex border-b">
@@ -105,6 +107,7 @@ const Restaurants = () => {
         </div>
       </div>
     </div>
+   
   )
 }
 
