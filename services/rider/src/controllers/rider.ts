@@ -2,6 +2,7 @@ import axios from "axios"
 import FormData from "form-data"
 import { AuthenticatedRequest } from "../middlewares/isAuth.js"
 import TryCatch from "../middlewares/trycatch.js"
+import { Rider } from "../models/rider.js"
 
 export const addriderprofile = TryCatch(
     async (req: AuthenticatedRequest, res) => {
@@ -39,7 +40,110 @@ export const addriderprofile = TryCatch(
                 }
             }
         )
+        const url = data.url
+        const {phoneNo,adhaarnumber,drivingLiscenceNumber,latitude,longitude} = req.body
+        if(!phoneNo || !adhaarnumber ||drivingLiscenceNumber || !longitude || !latitude){
+            return res.status(400).json({
+                message : "details are not given"
+            })
+        }
+        const existingprofile = await Rider.findOne({
+            userId:user.id
+        })
+        if(existingprofile){
+            return res.status(400).json({
+                message : "Profile Already Exists"
+            })
+        }
+        const riderprofile = await Rider.create({
+            userId:user.id,
+            image:url,
+            phoneNo:phoneNo,
+            adhaarnumber:adhaarnumber,
+            drivingLiscenseNumber:drivingLiscenceNumber,
+            location:{
+                type:"Point",
+                coordinates:[longitude,latitude]
+            },
+            isAvailable:false
+        })
+        return res.status(201).json({
+            message : "Rider Created Successfully",
+            rider:riderprofile
+        })
+
+
+
 
       
     }
 )
+export const fetchmyprofile = TryCatch(async(req:AuthenticatedRequest,res)=>{
+     const user = req.user
+        if (!user) {
+            return res.status(401).json({
+                message: "Unauthorised"
+            })
+        }
+        if (user.role !== "rider") {
+            return res.status(403).json({
+                message: "User must be rider"
+            })
+        }
+        const account = await Rider.findOne({userId:user.id})
+        if(!account){
+            return res.status(400).json({
+                message : "please create a account first"
+            })
+        }
+        return res.status(200).json({
+            message : "rider fetched succesfully",
+            rider : account
+        })
+})
+export const toggleavailability = TryCatch(async(req:AuthenticatedRequest,res)=>{
+     const user = req.user
+        if (!user) {
+            return res.status(401).json({
+                message: "Unauthorised"
+            })
+        }
+        if (user.role !== "rider") {
+            return res.status(403).json({
+                message: "User must be rider"
+            })
+        }
+       const {isAvailable,latitude,longitude}=req.body
+       if(typeof isAvailable!=="boolean"){
+        return res.status(400).json({
+            message : "wrong parameters type"
+        })
+       }
+       if(latitude===undefined || longitude === undefined){
+        return res.status(400).json({
+            message : "Location Required"
+        })
+       }
+        const account = await Rider.findOne({userId:user.id})
+        if(!account){
+            return res.status(400).json({
+                message : "please create a account first"
+            })
+        }
+        if(isAvailable && !account.isverified){
+            return res.status(403).json({
+                message : "Not Verified Account"
+            })
+        }
+        account.isAvailable = isAvailable
+        account.location = {
+            type: "Point",
+            coordinates: [longitude, latitude]
+        }
+        account.lastactiveat = new Date()
+        await account.save()
+        return res.status(200).json({
+            message: isAvailable ? "Rider is Now online" : "Rider is now offline",
+            rider: account
+        })
+})

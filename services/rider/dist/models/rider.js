@@ -13,7 +13,6 @@ const riderSchema = new Schema({
     phoneNo: {
         type: String,
         required: true,
-        unique: true
     },
     adhaarnumber: {
         type: String,

@@ -34,7 +34,6 @@ const riderSchema = new Schema<Rider>(
         phoneNo: {
             type: String,
             required: true,
-            unique:true
         },
         adhaarnumber: {
             type: String,
