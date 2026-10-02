@@ -31,8 +31,8 @@ export const paymentconsumer = async () => {
                 channel.ack(msg);
                 return;
             }
-            await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
-                event: "order:New",
+            const { data } = await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+                event: "order:new",
                 room: `restaurant:${order.restid}`,
                 payload: {
                     orderid: order._id,
@@ -42,8 +42,9 @@ export const paymentconsumer = async () => {
                     "x-internal-key": process.env.INTERNAL_KEY
                 }
             });
+            console.log("socket message sent", data);
             await cart.deleteMany({ userid: order.userId });
-            console.log(order);
+            console.log();
             console.log("rest queue order placed", orderid);
             channel.ack(msg);
         }

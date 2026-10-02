@@ -42,7 +42,6 @@ export const addrestaurants = TryCatch(async (req:AuthenticatedRequest,res)=>{
     const form = new FormData();
 
 form.append("folder", "restaurants");
-
 form.append("file", file.buffer, {
     filename: file.originalname,
     contentType: file.mimetype

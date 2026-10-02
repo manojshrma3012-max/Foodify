@@ -5,13 +5,17 @@ import jwt from 'jsonwebtoken'
 
 let io: Server;
 
+interface SocketUser {
+    id: string;
+    restID?: string;
+}
+
 export const initSocket = (server: http.Server) => {
     io = new Server(server, {
         cors: {
             origin: "*"
         }
     });
-
     io.use((socket, next) => {
         try {
             const token = socket.handshake.auth?.token;
@@ -19,18 +23,25 @@ export const initSocket = (server: http.Server) => {
             if (!token) {
                 return next(new Error("Unauthorized"));
             }
-
-            const decoded = jwt.verify(
-                token,
-                process.env.SECRET!
-            ) as any;
-
-            if (!decoded || !decoded.user) {
+            const decoded = jwt.verify(token, process.env.SECRET!);
+            if (typeof decoded !== "object" || decoded === null) {
                 return next(new Error("Unauthorized"));
             }
 
-            socket.data.user = decoded.user;
+            const tokenUser = decoded.tokendata ?? decoded.user ?? decoded;
+            if (
+                typeof tokenUser !== "object" ||
+                tokenUser === null ||
+                typeof tokenUser.id !== "string"
+            ) {
+                return next(new Error("Unauthorized"));
+            }
 
+            const user: SocketUser = { id: tokenUser.id };
+            if (typeof tokenUser.restID === "string") {
+                user.restID = tokenUser.restID;
+            }
+            socket.data.user = user;
             next();
         } catch (error) {
             console.log(error, "socket error");
@@ -40,6 +51,7 @@ export const initSocket = (server: http.Server) => {
 
     io.on("connection", (socket) => {
         const user = socket.data.user;
+        console.log(user)
 
         if (!user) {
             socket.disconnect();
@@ -50,19 +62,17 @@ export const initSocket = (server: http.Server) => {
 
         socket.join(`user:${userid}`);
 
-        if (user.restid) {
-            socket.join(`restaurant:${user.restid}`);
+        if (user.restID) {
+            socket.join(`restaurant:${user.restID}`);
         }
 
         console.log("User connected:", userid);
         console.log("Socket rooms:", [...socket.rooms]);
-
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${userid}`);
         });
     });
 };
-
 export const getio = () => {
     if (!io) {
         throw new Error("Socket.io not initialized");

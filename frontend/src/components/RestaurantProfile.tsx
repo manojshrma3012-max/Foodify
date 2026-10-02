@@ -3,6 +3,7 @@ import type { Restaurant } from "../Types";
 import axios from "axios";
 import { restserviceurl } from "../main";
 import toast from "react-hot-toast";
+import { useAppdata } from "../context/AppContext";
 
 interface RestaurantProfileProps {
   restaurant: Restaurant;
@@ -73,13 +74,28 @@ const RestaurantProfile = ({
 
     setIsEditing(false);
   };
-
+const {setisAuth,setUser} = useAppdata()
   const handleCancel = () => {
     setName(restaurant.name);
     setDescription(restaurant.description || "");
     setIsOpen(restaurant.isOpen);
     setIsEditing(false);
   };
+  const logouthandler =async ()=>{
+     await axios.put(
+        `${restserviceurl}/api/restaurants/status`,
+        { status: false },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+    setisAuth(false)
+    setUser(null)
+    localStorage.setItem("token","")
+   
+  }
 
   return (
     <div className="bg-[#faf9f6] px-4 py-5 md:px-6 md:py-6">
@@ -180,6 +196,19 @@ const RestaurantProfile = ({
                   {restaurant.isOpen ? "Open" : "Closed"}
                 </span>
               )}
+              {canEdit && (
+                <button 
+                onClick={logouthandler}
+                disabled = {!restaurant.isOpen}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    restaurant.isOpen
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                 Logout
+                </button>
+              )}
             </div>
           </div>
 
@@ -216,7 +245,6 @@ const RestaurantProfile = ({
               {/* Seller only */}
               {canEdit && (
                 <div className="flex gap-3">
-
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
@@ -232,7 +260,6 @@ const RestaurantProfile = ({
                       >
                         Cancel
                       </button>
-
                       <button
                         onClick={handleSave}
                         className="px-5 py-2.5 rounded-xl bg-[#5c4033] text-white font-medium"

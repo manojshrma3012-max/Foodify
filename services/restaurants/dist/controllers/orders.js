@@ -200,7 +200,7 @@ export const updateorderstatus = TryCatch(async (req, res) => {
     }
     order.status = status;
     await order.save();
-    await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+    await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
         event: "order:updated",
         room: `user:${order.userId}`,
         payload: {
@@ -220,9 +220,10 @@ export const updateorderstatus = TryCatch(async (req, res) => {
 });
 export const getmyorders = TryCatch(async (req, res) => {
     const user = req.user;
+    console.log(user);
     if (!user) {
         return res.status(401).json({
-            message: "Unauthorised"
+            message: "Unauth"
         });
     }
     const orders = await Order.find({

@@ -5,9 +5,9 @@ import { createorder, fetchorderforpayment, fetchRestaurantOrders, fetchsingleor
 const orderroute = Router()
 
 orderroute.post('/create-order',authmiddle,createorder)
+orderroute.get('/get-all',authmiddle,getmyorders)
 orderroute.get('/get-order/:id',fetchorderforpayment)
 orderroute.get('/:restid',authmiddle,isSeller,fetchRestaurantOrders)
 orderroute.put('/update/:orderid',authmiddle,isSeller,updateorderstatus)
-orderroute.get('/user',authmiddle,getmyorders)
 orderroute.get('/single/:orderid',authmiddle,fetchsingleorder)
 export default orderroute

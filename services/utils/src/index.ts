@@ -15,15 +15,9 @@ dotenv.config()
  app.get('/health',(req,res)=>{
     res.send("hello from the server")
  })
-
-
 app.use('/api',uploadroutes)
 app.use('/api/payment',paymentroutes)
-
-
-
 const PORT = process.env.PORT || 5002
 app.listen(PORT,()=>{
-    console.log(`utils running on ${PORT}`)
-   
+    console.log(`utils running on ${PORT}`)  
 })
