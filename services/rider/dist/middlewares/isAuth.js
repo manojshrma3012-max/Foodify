@@ -41,11 +41,11 @@ export async function authmiddle(req, res, next) {
         });
     }
 }
-export async function isSeller(req, res, next) {
+export async function isRider(req, res, next) {
     const user = req.user;
-    if (user && user.role !== "seller") {
+    if (user && user.role !== "rider") {
         res.status(401).json({
-            message: "Unauthorized must be a seller"
+            message: "Unauthorized must be a Rider"
         });
         return;
     }

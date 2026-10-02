@@ -63,15 +63,15 @@ export async function authmiddle(
         });
     }
 }
-export async function isSeller(
+export async function isRider(
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): Promise<void>{
     const user = req.user
-    if(user && user.role !== "seller"){
+    if(user && user.role !== "rider"){
         res.status(401).json({
-            message : "Unauthorized must be a seller"
+            message : "Unauthorized must be a Rider"
         })
         return
     }
