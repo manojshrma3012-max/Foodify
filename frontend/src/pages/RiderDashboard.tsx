@@ -68,55 +68,63 @@ const RiderDashboard = () => {
             setloading(false);
         }
     };
-    const toggleavailability = async () => {
-        if (!navigator.geolocation) {
-            toast.error("Location access is required");
-            return;
-        }
+   const toggleavailability = async () => {
+    // Never allow an unverified rider to go online
+    if (!profile?.isverified) {
+        toast.error(
+            "Your rider profile must be verified before going online"
+        );
+        return;
+    }
 
-        settoggling(true);
+    if (!navigator.geolocation) {
+        toast.error("Location access is required");
+        return;
+    }
 
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-                try {
-                    await axios.patch(
-                        `${riderserviceurl}/api/rider/togglestatus`,
-                        {
-                            isAvailable: !profile?.isAvailable,
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude,
+    settoggling(true);
+
+    navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+            try {
+                const wasAvailable = profile.isAvailable;
+
+                await axios.patch(
+                    `${riderserviceurl}/api/rider/togglestatus`,
+                    {
+                        isAvailable: !wasAvailable,
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                            )}`,
                         },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${localStorage.getItem(
-                                    "token"
-                                )}`,
-                            },
-                        }
-                    );
+                    }
+                );
 
-                    const wasAvailable = profile?.isAvailable;
+                await fetchprofile();
 
-                    await fetchprofile();
-
-                    toast.success(
-                        wasAvailable
-                            ? "You are Offline Now"
-                            : "You are Online Now"
-                    );
-                } catch (error) {
-                    console.log(error);
-                    toast.error("Failed to update availability");
-                } finally {
-                    settoggling(false);
-                }
-            },
-            () => {
-                toast.error("Unable to get your location");
+                toast.success(
+                    wasAvailable
+                        ? "You are Offline Now"
+                        : "You are Online Now"
+                );
+            } catch (error) {
+                console.log(error);
+                toast.error("Failed to update availability");
+            } finally {
                 settoggling(false);
             }
-        );
-    };
+        },
+        () => {
+            toast.error("Unable to get your location");
+            settoggling(false);
+        }
+    );
+};
     const addRiderprofile = async (data: RiderForm) => {
         console.log("Rider data:", data);
 
@@ -522,52 +530,243 @@ const RiderDashboard = () => {
             </div>
         );
     }
+return (
+    <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
 
-    return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="mx-auto max-w-4xl">
+            {/* Header */}
+            <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">
                     Rider Dashboard
                 </h1>
 
-                <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold">
-                        Welcome, {user.name}
-                    </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                    Manage your rider profile and availability
+                </p>
+            </div>
 
-                    <p className="mt-2 text-gray-500">
-                        Phone: {profile.phoneNo}
-                    </p>
+            {/* Profile Card */}
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
-                    <div className="mt-4">
+                {/* Profile Header */}
+                <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
+
+                    {/* Rider Info */}
+                    <div className="flex items-center gap-5">
+
+                        {/* Profile Image */}
+                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-gray-100">
+                            <img
+                                src={profile.image}
+                                alt="Rider profile"
+                                className="h-full w-full object-cover"
+                            />
+                        </div>
+
+                        {/* Name */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                {user.name}
+                            </h2>
+
+                            <p className="mt-1 text-sm text-gray-500">
+                                {profile.phoneNo}
+                            </p>
+
+                            {/* Verification Status */}
+                            <div className="mt-2">
+                                {profile.isverified ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                        <span className="h-2 w-2 rounded-full bg-green-500" />
+                                        Verified Rider
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                                        <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                                        Verification Pending
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="flex flex-col items-start sm:items-end">
+
+                        {/* Current Status */}
                         <span
-                            className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
                                 profile.isAvailable
                                     ? "bg-green-100 text-green-700"
-                                    : "bg-gray-100 text-gray-700"
+                                    : "bg-gray-100 text-gray-600"
                             }`}
                         >
+                            <span
+                                className={`h-2.5 w-2.5 rounded-full ${
+                                    profile.isAvailable
+                                        ? "bg-green-500"
+                                        : "bg-gray-400"
+                                }`}
+                            />
+
                             {profile.isAvailable
                                 ? "Online"
                                 : "Offline"}
                         </span>
+
+                        {/* Availability Button */}
+                        <button
+                            onClick={toggleavailability}
+                            disabled={
+                                toggling || !profile.isverified
+                            }
+                            className={`mt-3 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
+                                !profile.isverified
+                                    ? "bg-gray-400"
+                                    : profile.isAvailable
+                                    ? "bg-gray-800 hover:bg-gray-900"
+                                    : "bg-green-500 hover:bg-green-600"
+                            }`}
+                        >
+                            {!profile.isverified
+                                ? "Verification Required"
+                                : toggling
+                                ? "Updating..."
+                                : profile.isAvailable
+                                ? "Go Offline"
+                                : "Go Online"}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Verification Message */}
+                {!profile.isverified && (
+                    <div className="border-t border-yellow-200 bg-yellow-50 px-6 py-4">
+                        <div className="flex items-start gap-3">
+
+                            <div className="mt-0.5 text-yellow-600">
+                                ⚠
+                            </div>
+
+                            <div>
+                                <p className="text-sm font-semibold text-yellow-800">
+                                    Verification pending
+                                </p>
+
+                                <p className="mt-1 text-sm text-yellow-700">
+                                    Your rider profile is currently under
+                                    verification. You can go online and
+                                    receive orders after your profile has
+                                    been verified.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Rider Details */}
+                <div className="grid grid-cols-1 divide-y divide-gray-100 border-t border-gray-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+
+                    {/* Phone */}
+                    <div className="p-6">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                            Phone Number
+                        </p>
+
+                        <p className="mt-2 font-semibold text-gray-900">
+                            {profile.phoneNo}
+                        </p>
                     </div>
 
-                    <button
-                        onClick={toggleavailability}
-                        disabled={toggling}
-                        className="mt-6 rounded-xl bg-red-500 px-6 py-3 font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    {/* Verification */}
+                    <div className="p-6">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                            Verification
+                        </p>
+
+                        <p
+                            className={`mt-2 font-semibold ${
+                                profile.isverified
+                                    ? "text-green-600"
+                                    : "text-yellow-600"
+                            }`}
+                        >
+                            {profile.isverified
+                                ? "Verified"
+                                : "Pending Verification"}
+                        </p>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="p-6">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                            Availability
+                        </p>
+
+                        <p
+                            className={`mt-2 font-semibold ${
+                                profile.isAvailable
+                                    ? "text-green-600"
+                                    : "text-gray-600"
+                            }`}
+                        >
+                            {profile.isAvailable
+                                ? "Available for Orders"
+                                : "Currently Offline"}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Dashboard Stats */}
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                {/* Today's Orders */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-500">
+                        Today's Orders
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-gray-900">
+                        0
+                    </p>
+                </div>
+
+                {/* Today's Earnings */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-500">
+                        Today's Earnings
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-gray-900">
+                        ₹0
+                    </p>
+                </div>
+
+                {/* Account Status */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-500">
+                        Account Status
+                    </p>
+
+                    <p
+                        className={`mt-2 text-xl font-bold ${
+                            profile.isverified
+                                ? "text-green-600"
+                                : "text-yellow-600"
+                        }`}
                     >
-                        {toggling
-                            ? "Updating..."
-                            : profile.isAvailable
-                            ? "Go Offline"
-                            : "Go Online"}
-                    </button>
+                        {profile.isverified
+                            ? "Verified"
+                            : "Pending"}
+                    </p>
                 </div>
             </div>
         </div>
-    );
+    </div>
+);
+
 };
 
 export default RiderDashboard;
+
