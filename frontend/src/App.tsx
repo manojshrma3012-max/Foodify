@@ -17,10 +17,14 @@ import Checkout from './pages/Checkout'
 import PaymentSuccess from './pages/PaymentSuccess'
 import Orders from './pages/Orders'
 import OrderPage from './pages/OrderPage'
+import RiderDashboard from './pages/RiderDashboard'
 const App = () => {
   const {user} = useAppdata()
   if(user && user?.role==="seller"){
     return <Restaurants/>
+  }
+  if(user && user?.role==="rider"){
+    return <RiderDashboard/>
   }
   return (
     <>
