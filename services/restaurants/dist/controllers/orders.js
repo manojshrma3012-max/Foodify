@@ -264,3 +264,48 @@ export const fetchsingleorder = TryCatch(async (req, res) => {
     }
     res.json(order);
 });
+export const assignRidertoorder = TryCatch(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_KEY) {
+        return res.status(403).json({
+            message: "forbiddden"
+        });
+    }
+    const { orderid, riderid, phoneNo, ridername } = req.body;
+    const order = await Order.findById(orderid);
+    if (order?.riderId !== null) {
+        return res.status(400).json({
+            message: "Already assigned"
+        });
+    }
+    const orderupdated = await Order.findOneAndUpdate({
+        _id: orderid,
+        riderId: null
+    }, {
+        riderId: riderid,
+        ridername,
+        riderphoneno: phoneNo,
+        status: "rider-assigned"
+    }, { new: true });
+    await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+        event: "order:rider_assigned",
+        room: `user:${order.userId}`,
+        payload: order
+    }, {
+        headers: {
+            "x-internal-key": process.env.INTERNAL_KEY
+        }
+    });
+    await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+        event: "order:rider_assigned",
+        room: `restaurant:${order.restid}`,
+        payload: order
+    }, {
+        headers: {
+            "x-internal-key": process.env.INTERNAL_KEY
+        }
+    });
+    res.json({
+        message: "rider assigned succesfully",
+        order: orderupdated
+    });
+});
