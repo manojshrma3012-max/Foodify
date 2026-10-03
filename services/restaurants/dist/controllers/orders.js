@@ -309,3 +309,90 @@ export const assignRidertoorder = TryCatch(async (req, res) => {
         order: orderupdated
     });
 });
+export const getorderrider = TryCatch(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_KEY) {
+        return res.status(403).json({
+            message: "forbiddden"
+        });
+    }
+    const { riderid } = req.body;
+    if (!riderid) {
+        return res.status(400).json({
+            message: "rider id required"
+        });
+    }
+    const order = await Order.findOne({
+        riderId: riderid,
+        status: { $ne: "delivered" }
+    }).populate("restid");
+    if (!order) {
+        return res.status(400).json({
+            message: "Order Not found"
+        });
+    }
+    res.json(order);
+});
+export const updateorderrider = TryCatch(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_KEY) {
+        return res.status(403).json({
+            message: "forbiddden"
+        });
+    }
+    const { orderid } = req.body;
+    const order = await Order.findById(orderid);
+    if (!order) {
+        return res.status(400).json({
+            message: "Order Not found"
+        });
+    }
+    if (order.status === "rider-assigned") {
+        order.status = "picked-up";
+        await order.save();
+        await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+            event: "order:rider_assigned",
+            room: `user:${order.userId}`,
+            payload: order
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+            event: "order:rider_assigned",
+            room: `restaurant:${order.restid}`,
+            payload: order
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        return res.json({
+            message: "order updated succefully"
+        });
+    }
+    if (order.status === "picked-up") {
+        order.status = "delivered";
+        await order.save();
+        await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+            event: "order:rider_assigned",
+            room: `user:${order.userId}`,
+            payload: order
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        await axios.post(`${process.env.REALTIME_SERVICE.replace(/\/+$/, '')}/api/v1/internal/emit`, {
+            event: "order:rider_assigned",
+            room: `restaurant:${order.restid}`,
+            payload: order
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        return res.json({
+            message: "order updated succefully"
+        });
+    }
+});
