@@ -11,6 +11,8 @@
   "keywords": [],
   "type": "module",
   "dependencies": {
+    "@types/amqplib": "^0.10.8",
+    "amqplib": "^2.2.0",
     "axios": "^1.20.0",
     "concurrently": "^10.0.5",
     "cors": "^2.8.6",

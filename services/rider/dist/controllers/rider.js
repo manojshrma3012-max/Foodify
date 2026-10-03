@@ -33,7 +33,7 @@ export const addriderprofile = TryCatch(async (req, res) => {
     });
     const url = data.url;
     const { phoneNo, adhaarnumber, drivingLiscenceNumber, latitude, longitude } = req.body;
-    if (!phoneNo || !adhaarnumber || drivingLiscenceNumber || !longitude || !latitude) {
+    if (!phoneNo || !adhaarnumber || !drivingLiscenceNumber || !longitude || !latitude) {
         return res.status(400).json({
             message: "details are not given"
         });

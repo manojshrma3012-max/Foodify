@@ -6,7 +6,6 @@ import { Rider } from "../models/rider.js"
 
 export const addriderprofile = TryCatch(
     async (req: AuthenticatedRequest, res) => {
-
         const user = req.user
         if (!user) {
             return res.status(401).json({
@@ -19,7 +18,6 @@ export const addriderprofile = TryCatch(
             })
         }
         const file = req.file
-
         if (!file) {
             return res.status(400).json({
                 message: "File not found"
@@ -42,7 +40,7 @@ export const addriderprofile = TryCatch(
         )
         const url = data.url
         const {phoneNo,adhaarnumber,drivingLiscenceNumber,latitude,longitude} = req.body
-        if(!phoneNo || !adhaarnumber ||drivingLiscenceNumber || !longitude || !latitude){
+        if(!phoneNo || !adhaarnumber || !drivingLiscenceNumber || !longitude || !latitude){
             return res.status(400).json({
                 message : "details are not given"
             })
