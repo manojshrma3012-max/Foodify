@@ -50,7 +50,6 @@ const Orders = () => {
         }
     }
 
-    // Silent fetch for realtime updates
     const refreshorders = async () => {
         try {
             const { data } = await axios.get(
@@ -82,11 +81,14 @@ const Orders = () => {
         }
 
         socket.on("order:updated", onupdated)
+         socket.on("order:rider_assigned",onupdated)
 
         return () => {
             socket.off("order:updated", onupdated)
+            socket.off("order:rider_assigned", onupdated);
         }
     }, [socket])
+
 
     if (loading) {
         return (

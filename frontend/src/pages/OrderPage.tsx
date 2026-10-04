@@ -42,8 +42,10 @@ const OrderPage = () => {
             refreshorder()     
         }
         socket.on("order:updated",onupdated)
+         socket.on("order:rider_assigned",onupdated)
         return ()=> {
             socket.off("order:updated",onupdated)
+            socket.off("order:rider_assigned", onupdated);
         }
     },[socket])
 
@@ -90,13 +92,9 @@ const OrderPage = () => {
             setorder(null)
         }
     }
-
-
     useEffect(() => {
         fetchsingleorder()
     }, [id])
-
-
     if (loading) {
         return (
             <div className="flex min-h-[70vh] items-center justify-center">

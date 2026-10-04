@@ -12,7 +12,7 @@ import {
   Clock,
 } from "lucide-react";
 import { restserviceurl } from "../main";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -46,9 +46,23 @@ const OrderCard = ({
   const isNew = order.status === "placed";
 
   const [loading, setloading] = useState(false)
+  const [retryvisible, setretryvisible] = useState(false)
+  useEffect(()=>{
+    if(order.status!=="ready_for_rider"){
+      setretryvisible(false)
+      return 
+    }
+    const timer = setTimeout(()=>{
+      setretryvisible(true)
+  },10000)
+  return ()=>{
+    clearTimeout(timer)
+  }
+  },[order.status])
 
   const updateOrderStatus = async (status: string) => {
     try {
+      setretryvisible(false)
         setloading(true)
         const {data} = await axios.put(`${restserviceurl}/api/order/update/${order._id}`,{
             status:status
@@ -80,7 +94,6 @@ const OrderCard = ({
     delivered: "bg-green-100 text-green-700",
     cancelled: "bg-red-100 text-red-700",
   };
-
   return (
     <div
       className={`overflow-hidden rounded-xl border bg-white shadow-sm transition ${
@@ -659,6 +672,12 @@ const OrderCard = ({
 
         </div>
       )}
+
+      {order.status==="ready_for_rider" && retryvisible && 
+      <div className="pt-2">
+        <button className="w-full rounded-lg border border-[#e23744] py-2 text-xs font-semibold text-[#e23744] hover:bg-red-50 disabled:opacity-50"
+        onClick={()=>updateOrderStatus("ready_for_rider")}>Retry Ready For rider</button>
+      </div>}
 
     </div>
   );

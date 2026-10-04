@@ -169,7 +169,7 @@ const RestaurantOrders = ({ restid }: { restid: string }) => {
      return () => {
       socket.off("order:rider_assigned", onupdateorder);
     }
-  })
+  },[socket])
 
   // ---------------------------------------
   // FILTER
