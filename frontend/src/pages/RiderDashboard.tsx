@@ -636,6 +636,9 @@ return (
                                 ? "Go Offline"
                                 : "Go Online"}
                         </button>
+                          <p className="mt-1 text-sm text-gray-500">
+                    Better to Go online when near 500m radius near the restaurant
+                         </p>
                     </div>
                 </div>
 

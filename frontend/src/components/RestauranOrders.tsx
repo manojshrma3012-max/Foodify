@@ -160,6 +160,16 @@ const RestaurantOrders = ({ restid }: { restid: string }) => {
       socket.off("order:new", handleNewOrder);
     };
   }, [socket, audioUnlocked, restid]);
+  useEffect(()=>{
+    if(!socket) return 
+    const onupdateorder = ()=>{
+      fetchOrders()
+    }
+    socket.on("order:rider_assigned",onupdateorder)
+     return () => {
+      socket.off("order:rider_assigned", onupdateorder);
+    }
+  })
 
   // ---------------------------------------
   // FILTER
