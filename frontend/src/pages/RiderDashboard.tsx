@@ -1,11 +1,13 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppdata } from "../context/AppContext";
 import { useSocket } from "../context/SocketContext";
 import axios from "axios";
 import { riderserviceurl } from "../main";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
+import type { ordertype } from "../Types";
+import audio from '../assets/sounds/order-delivery.mp3'
 
 interface Rider {
     _id: string;
@@ -44,11 +46,59 @@ const RiderDashboard = () => {
     const { location } = useAppdata();
     const { user } = useAppdata();
     const { socket } = useSocket();
-
     const [profile, setprofile] = useState<Rider | null>(null);
     const [loading, setloading] = useState(true);
     const [toggling, settoggling] = useState(false);
+    const [AudioUnlocked, setAudioUnlocked] = useState(false)
+const [incomingorders, setincomingorders] = useState<String[]>([])
+const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+ useEffect(() => {
+    const newAudio = new Audio(audio);
+    newAudio.preload = "auto";
+    audioRef.current = newAudio;
+    return () => {
+      newAudio.pause();
+      newAudio.currentTime = 0;
+      audioRef.current = null;
+    };
+  }, []);
+ const unlockAudio = async () => {
+    if (!audioRef.current) return;
+    try {
+      await audioRef.current.play();
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setAudioUnlocked(true);
+      console.log("Order notification sound unlocked");
+    } catch (error) {
+      console.log("Failed to unlock audio:", error);
+    }
+  };
+  const playNotificationSound = () => {
+    if (!AudioUnlocked || !audioRef.current) return;
 
+    audioRef.current.currentTime = 0;
+
+    audioRef.current.play().catch((error) => {
+      console.log("Failed to play notification:", error);
+  });
+  };
+  useEffect(()=>{
+    if(!socket) return 
+    const onorderavailable = ({orderid}:{orderid:string})=>{
+        setincomingorders((prev)=>prev.includes(orderid) ? prev : [...prev,orderid])
+        playNotificationSound()
+        setTimeout(() => {
+        setincomingorders((prev)=>prev.filter((id)=>id!==orderid))  
+    },10000);
+    }
+    
+    socket.on("order:ready",onorderavailable)
+    return ()=>{
+        socket.off("order:ready",onorderavailable)
+    }
+  },[socket,AudioUnlocked])
     const fetchprofile = async () => {
         try {
             const { data } = await axios.get(
@@ -127,14 +177,11 @@ const RiderDashboard = () => {
 };
     const addRiderprofile = async (data: RiderForm) => {
         console.log("Rider data:", data);
-
         if (!location) {
             toast.error("Location is required");
             return;
         }
-
         const formData = new FormData();
-
         formData.append("adhaarnumber", data.adhaarnumber);
         formData.append(
             "drivingLiscenceNumber",
@@ -144,11 +191,9 @@ const RiderDashboard = () => {
 
         formData.append("longitude", String(location.longitude));
         formData.append("latitude", String(location.latitude));
-
         if (data.image && data.image[0]) {
             formData.append("file", data.image[0]);
         }
-
         try {
             const { data } = await axios.post(
                 `${riderserviceurl}/api/rider/addrider`,
@@ -161,7 +206,6 @@ const RiderDashboard = () => {
                     },
                 }
             );
-
             console.log(data);
             await fetchprofile();
             toast.success("Profile added successfully");

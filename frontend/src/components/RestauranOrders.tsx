@@ -81,12 +81,9 @@ const RestaurantOrders = ({ restid }: { restid: string }) => {
 
     try {
       await audioRef.current.play();
-
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-
       setAudioUnlocked(true);
-
       console.log("Order notification sound unlocked");
     } catch (error) {
       console.log("Failed to unlock audio:", error);
@@ -95,9 +92,7 @@ const RestaurantOrders = ({ restid }: { restid: string }) => {
 
   const playNotificationSound = () => {
     if (!audioUnlocked || !audioRef.current) return;
-
     audioRef.current.currentTime = 0;
-
     audioRef.current.play().catch((error) => {
       console.log("Failed to play notification:", error);
     });
@@ -149,7 +144,6 @@ const RestaurantOrders = ({ restid }: { restid: string }) => {
 
     const handleNewOrder = () => {
       console.log("New order received through socket");
-
       playNotificationSound();
       fetchOrders();
     };
