@@ -132,3 +132,64 @@ export const toggleavailability = TryCatch(async (req, res) => {
         rider: account
     });
 });
+export const acceptorder = TryCatch(async (req, res) => {
+    const rideruserid = req.user?.id;
+    const { orderid } = req.params;
+    if (!rideruserid) {
+        return res.status(400).json({
+            message: "please log in"
+        });
+    }
+    const rider = await Rider.findOne({ userId: rideruserid, isAvailable: true });
+    if (!rider) {
+        return res.status(404).json({
+            message: "rider not found"
+        });
+    }
+    try {
+        const { data } = await axios.put(`${process.env.REST_SERVICE_URL}/api/order/assign-rider`, {
+            phoneNo: rider.phoneNo, orderid, ridername: req.user?.name, riderid: rider._id.toString()
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        if (data.success) {
+            const riderdeatils = await Rider.findOneAndUpdate({
+                userId: rideruserid,
+                isAvailable: true
+            }, { isAvailable: false }, { new: true });
+        }
+        res.json({
+            message: "Order Accepted"
+        });
+    }
+    catch (error) {
+        res.status(400).json({
+            message: "Order already taken"
+        });
+    }
+});
+export const fetchmyorder = TryCatch(async (req, res) => {
+    const rideruserid = req.user?.id;
+    if (!rideruserid) {
+        return res.status(400).json({
+            message: "please log in"
+        });
+    }
+    const rider = await Rider.findOne({ userId: rideruserid, isAvailable: true });
+    if (!rider) {
+        return res.status(404).json({
+            message: "rider not found"
+        });
+    }
+    try {
+        const { data } = await axios.get(`${process.env.REST_SERVICE_URL}/api/order/rider-order`, { riderid: rider._id }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+    }
+    catch (error) {
+    }
+});
