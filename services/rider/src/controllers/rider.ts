@@ -228,9 +228,7 @@ export const updateorderstatus = TryCatch(async (req: AuthenticatedRequest, res)
     }
 
     const { orderid } = req.params
-    const { status } = req.body
-
-    if (!orderid || !status) {
+    if (!orderid) {
         return res.status(400).json({
             message: "Order id and status are required"
         })
