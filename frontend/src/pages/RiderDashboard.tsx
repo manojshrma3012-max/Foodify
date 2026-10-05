@@ -9,6 +9,9 @@ import { useForm } from "react-hook-form";
 import type { ordertype } from "../Types";
 import audio from '../assets/sounds/order-delivery.mp3'
 import { Bell } from "lucide-react";
+import RiderOrderRequest from "../components/RiderOrderRequest";
+import { divIcon } from "leaflet";
+import RiderCurrentOrder from "../components/RiderCurrentOrder";
 
 interface Rider {
     _id: string;
@@ -120,7 +123,11 @@ const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
         }
     };
    const toggleavailability = async () => {
-    // Never allow an unverified rider to go online
+     // Rider cannot go online if they already have an order
+    if (!profile?.isAvailable && currentorders) {
+        toast.error("You already have an active order")
+        return
+    }
     if (!profile?.isverified) {
         toast.error(
             "Your rider profile must be verified before going online"
@@ -215,34 +222,29 @@ const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
             toast.error("Failed to add rider profile");
         }
     };
-    const fetchcurrentorder=async()=>{
-        try {
-             const { data } = await axios.get(
-                `${riderserviceurl}/api/rider/fetch-order`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            "token"
-                        )}`,
-                    },
-                }
-            );
-            console.log(data)
-            setcurrentorders(data.order)
-            
-        } catch (error) {
-            console.log(error)
-            setcurrentorders(null)
-            
-        }
+   const fetchcurrentorder = async () => {
+    try {
+        const { data } = await axios.get(
+            `${riderserviceurl}/api/rider/fetch-order`,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            }
+        )
+
+        console.log("Current order API response:", data)
+
+        setcurrentorders(data.order ?? null)
+
+    } catch (error) {
+        console.log("Failed to fetch current order:", error)
+        setcurrentorders(null)
     }
+}
     useEffect(()=>{
         fetchcurrentorder()
     },[])
-    // =========================
-    // Fetch Profile on Mount
-    // =========================
-
     useEffect(() => {
         if (user?.role === "rider") {
             fetchprofile();
@@ -657,7 +659,6 @@ return (
                             </div>
                         </div>
                     </div>
-
                     {/* Availability */}
                     <div className="flex flex-col items-start sm:items-end">
 
@@ -685,9 +686,11 @@ return (
                         {/* Availability Button */}
                         <button
                             onClick={toggleavailability}
-                            disabled={
-                                toggling || !profile.isverified
-                            }
+                           disabled={
+                                 toggling ||
+                                 !profile.isverified ||
+                                 (!profile.isAvailable && !!currentorders)
+                             }
                             className={`mt-3 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
                                 !profile.isverified
                                     ? "bg-gray-400"
@@ -696,13 +699,16 @@ return (
                                     : "bg-green-500 hover:bg-green-600"
                             }`}
                         >
-                            {!profile.isverified
-                                ? "Verification Required"
-                                : toggling
-                                ? "Updating..."
-                                : profile.isAvailable
-                                ? "Go Offline"
-                                : "Go Online"}
+                           {!profile.isverified
+                              ? "Verification Required"
+                              : currentorders && !profile.isAvailable
+                              ? "Active Order Exists"
+                              : toggling
+                              ? "Updating..."
+                              : profile.isAvailable
+                              ? "Go Offline"
+                              : "Go Online"
+                          }                          
                         </button>
                           <p className="mt-1 text-sm text-gray-500">
                     Better to Go online when near 500m radius near the restaurant
@@ -855,10 +861,16 @@ return (
             <div className="mx-auto max-w-md space-y-3 px-4">
               <h3 className="font-semibold text-gray-700">Incoming Orders</h3>
               {incomingorders.map((id) => (
-                <p key={id.toString()}>Your Orders :{id}</p>
+                <RiderOrderRequest key={String(id)} orderid={id} onorderaccepted={()=>{
+                    fetchprofile()
+                    fetchcurrentorder()
+                }}/>
               ))}
             </div>
           )}
+
+          {currentorders && <div className="mx-auto max-w-md px-4 space-y-4 ">
+            <RiderCurrentOrder order ={currentorders} onstatusupdate={fetchcurrentorder} /></div>}
         </div>
     </div>
 );

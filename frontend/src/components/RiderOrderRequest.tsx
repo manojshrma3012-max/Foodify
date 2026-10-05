@@ -4,7 +4,7 @@ import axios from "axios"
 import toast from "react-hot-toast"
 
 interface Props{
-    orderid:string,
+    orderid:String,
     onorderaccepted:()=>void
 }
 const RiderOrderRequest = ({orderid,onorderaccepted}:Props) => {
@@ -20,7 +20,7 @@ const RiderOrderRequest = ({orderid,onorderaccepted}:Props) => {
                 }
                 return prev-1
             })  
-        }, 10000);
+        }, 1000);
         return ()=>{
             clearInterval(interval)
         }
@@ -44,7 +44,7 @@ const RiderOrderRequest = ({orderid,onorderaccepted}:Props) => {
   return (
     <div className="rounded-xl bg-white p-4 shadow-sm border border-green-300 space-y-3">
         <p className="text-center text-xs font-semibold text-red-600">
-            Accept Within {secondsleft}
+            Accept Within {secondsleft} Seoncds
         </p>
         <p className="text-center text-xs font-semibold text-green-600">
             New Delivery request

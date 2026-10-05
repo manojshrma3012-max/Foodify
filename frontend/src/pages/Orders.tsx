@@ -81,15 +81,12 @@ const Orders = () => {
         }
 
         socket.on("order:updated", onupdated)
-         socket.on("order:rider_assigned",onupdated)
-
+        socket.on("order:rider_assigned",onupdated)
         return () => {
             socket.off("order:updated", onupdated)
             socket.off("order:rider_assigned", onupdated);
         }
     }, [socket])
-
-
     if (loading) {
         return (
             <p className="text-center text-gray-500 mt-10">
