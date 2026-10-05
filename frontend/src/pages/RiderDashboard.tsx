@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import type { ordertype } from "../Types";
 import audio from '../assets/sounds/order-delivery.mp3'
+import { Bell } from "lucide-react";
 
 interface Rider {
     _id: string;
@@ -86,6 +87,7 @@ const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
   };
   useEffect(()=>{
     if(!socket) return 
+    console.log("Useffect called")
     const onorderavailable = ({orderid}:{orderid:string})=>{
         setincomingorders((prev)=>prev.includes(orderid) ? prev : [...prev,orderid])
         playNotificationSound()
@@ -93,7 +95,6 @@ const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
         setincomingorders((prev)=>prev.filter((id)=>id!==orderid))  
     },10000);
     }
-    
     socket.on("order:ready",onorderavailable)
     return ()=>{
         socket.off("order:ready",onorderavailable)
@@ -214,7 +215,30 @@ const [currentorders, setcurrentorders] = useState<ordertype|null>(null)
             toast.error("Failed to add rider profile");
         }
     };
-
+    const fetchcurrentorder=async()=>{
+        try {
+             const { data } = await axios.get(
+                `${riderserviceurl}/api/rider/fetch-order`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                }
+            );
+            console.log(data)
+            setcurrentorders(data.order)
+            
+        } catch (error) {
+            console.log(error)
+            setcurrentorders(null)
+            
+        }
+    }
+    useEffect(()=>{
+        fetchcurrentorder()
+    },[])
     // =========================
     // Fetch Profile on Mount
     // =========================
@@ -809,6 +833,32 @@ return (
                     </p>
                 </div>
             </div>
+        </div>
+        <div className="mt-5">
+          <div>
+          {!AudioUnlocked ? (
+            <button
+              onClick={unlockAudio}
+              className="flex items-center gap-2 rounded-lg bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+            >
+              <Bell size={18} />
+              Enable Order Notifications
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+              <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+              Notifications enabled
+            </div>
+          )}
+          </div>
+          {profile.isAvailable && incomingorders.length > 0 && (
+            <div className="mx-auto max-w-md space-y-3 px-4">
+              <h3 className="font-semibold text-gray-700">Incoming Orders</h3>
+              {incomingorders.map((id) => (
+                <p key={id.toString()}>Your Orders :{id}</p>
+              ))}
+            </div>
+          )}
         </div>
     </div>
 );
