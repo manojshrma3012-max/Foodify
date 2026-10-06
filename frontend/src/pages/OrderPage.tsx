@@ -528,6 +528,19 @@ const OrderPage = () => {
 
             </div>
 
+           {
+              (order.status === "rider-assigned" ||
+               order.status === "picked-up") ? (
+                riderloc ? (
+                  <div>
+                    {/* rider location UI */}
+                  </div>
+                ) : (
+                  <p>Waiting For Rider Location</p>
+                )
+              ) : null
+               }            
+
         </div>
     )
 }
