@@ -12,6 +12,7 @@ import { Bell } from "lucide-react";
 import RiderOrderRequest from "../components/RiderOrderRequest";
 import { divIcon } from "leaflet";
 import RiderCurrentOrder from "../components/RiderCurrentOrder";
+import RiderOrderMap from "../components/RiderOrderMap";
 
 interface Rider {
     _id: string;
@@ -870,7 +871,9 @@ return (
           )}
 
           {currentorders && <div className="mx-auto max-w-md px-4 space-y-4 ">
-            <RiderCurrentOrder order ={currentorders} onstatusupdate={fetchcurrentorder} /></div>}
+            <RiderCurrentOrder order ={currentorders} onstatusupdate={fetchcurrentorder} />
+            <RiderOrderMap order = {currentorders}/>
+            </div>}
         </div>
     </div>
 );

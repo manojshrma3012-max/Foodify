@@ -48,6 +48,26 @@ const OrderPage = () => {
             socket.off("order:rider_assigned", onupdated);
         }
     },[socket])
+    const [riderloc, setriderloc] = useState<[number,number]|null>(null)
+
+    useEffect(()=>{
+        if(!socket || !id) return 
+        socket.emit("join",`user:${id}`)
+        return ()=>{
+            socket.emit("leave",`user:${id}`)
+        }
+    },[socket,id])
+    useEffect(()=>{
+        if(!socket) return
+        const onRiderloc = ({latitude,longitude}:any)=>{
+            console.log("Rider Loaction",latitude,longitude)
+            setriderloc([latitude,longitude])
+        }
+        socket.on("rider:location",onRiderloc)
+        return ()=>{
+            socket.off("rideer:location",onRiderloc)
+        }
+    },[socket])
 
     const fetchsingleorder = async () => {
         if (!id) return
