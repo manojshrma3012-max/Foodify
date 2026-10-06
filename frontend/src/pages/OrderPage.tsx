@@ -17,6 +17,7 @@ import {
     Circle
 } from "lucide-react"
 import { useSocket } from "../context/SocketContext"
+import UserOrderMap from "../components/UserOrderMap"
 
 const ORDER_STATUSES = [
     "placed",
@@ -532,9 +533,7 @@ const OrderPage = () => {
               (order.status === "rider-assigned" ||
                order.status === "picked-up") ? (
                 riderloc ? (
-                  <div>
-                    {/* rider location UI */}
-                  </div>
+                 <UserOrderMap riderloc = {riderloc} deliveryloc = {[order.deliveryaddress.latitude,order.deliveryaddress.longitude]}/>
                 ) : (
                   <p>Waiting For Rider Location</p>
                 )
