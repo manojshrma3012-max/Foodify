@@ -12,7 +12,7 @@ export const orderreadyconsumer = async () => {
             const event = JSON.parse(msg.content.toString());
             console.log(event.type);
             if (event.type !== "ORDER_READY_FOR_RIDER") {
-                console.log("slipping non-roder ready for rider");
+                console.log("skipping non-roder ready for rider");
                 channel.ack(msg);
                 return;
             }
@@ -24,7 +24,7 @@ export const orderreadyconsumer = async () => {
                 location: {
                     $near: {
                         $geometry: location,
-                        $maxDistance: 1000
+                        $maxDistance: 200000
                     }
                 }
             });

@@ -6,7 +6,7 @@ export const connectrabbitmq = async () => {
     await channel.assertQueue(process.env.PAYMENT_QUEUE, {
         durable: true
     });
-    await channel.assertQueue(process.env.RIDER_QUEUE, {
+    await channel.assertQueue(process.env.ORDER_READY_QUEUE, {
         durable: true
     });
     console.log("connected to rabbit mq");

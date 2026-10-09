@@ -305,6 +305,15 @@ export const assignRidertoorder = TryCatch(async(req,res)=>{
         })
     }
     const {orderid,riderid,phoneNo,ridername} = req.body
+    const orderavailable = await Order.findOne({riderId:riderid,
+        status:{$ne:"delivered"}
+    })
+    if(orderavailable){
+        return res.status(400).json({
+            message : "You Already Have and order"
+        })
+    }
+
     const order = await Order.findById(orderid)
     if(order?.riderId !==null){
         return res.status(400).json({
@@ -320,7 +329,6 @@ export const assignRidertoorder = TryCatch(async(req,res)=>{
         riderphoneno:phoneNo,
         status:"rider-assigned"
     },{new:true})
-
      await axios.post(`${process.env.REALTIME_SERVICE!.replace(/\/+$/, '')}/api/v1/internal/emit`,{
         event :"order:rider_assigned",
         room : `user:${order.userId}`,
@@ -340,6 +348,7 @@ export const assignRidertoorder = TryCatch(async(req,res)=>{
         }
     })
     res.json({
+        success:true,
         message : "rider assigned succesfully",
         order:orderupdated
     })
@@ -352,14 +361,16 @@ export const getorderrider = TryCatch(async(req,res)=>{
             message : "forbiddden"
         })
     }
-    const {riderid} = req.body
-    if(!riderid){
+    const riderid = req.query.riderid
+    const riderId = typeof riderid === "string" ? riderid : Array.isArray(riderid) ? riderid[0] : undefined
+
+    if(!riderId){
         return res.status(400).json({
             message : "rider id required"
         })
     }
     const order = await Order.findOne({
-        riderId:riderid,
+        riderId: riderId,
         status:{$ne:"delivered"}
     }).populate("restid")
     if(!order){

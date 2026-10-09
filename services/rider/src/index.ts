@@ -4,12 +4,15 @@ import dotenv from 'dotenv'
 import connectDb from './config/db.js'
 import riderroutes from './routes/rider.js'
 import { connectrabbitmq } from './config/connectrabbitmq.js'
+import { orderreadyconsumer } from './config/orderreadyconsumer.js'
 const app = express()
 
 
 app.use(cors())
 dotenv.config()
-connectrabbitmq()
+await connectrabbitmq()
+orderreadyconsumer()
+
  app.use(express.json({limit:"50 mb"}))
  app.use(express.urlencoded({limit:"50 mb",extended:true}))
  app.get('/health',(req,res)=>{

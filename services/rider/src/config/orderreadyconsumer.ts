@@ -23,7 +23,7 @@ export const orderreadyconsumer = async()=>{
                 location:{
                     $near:{
                         $geometry:location,
-                        $maxDistance: 1000
+                        $maxDistance: 200000
                     }
                 }
             })

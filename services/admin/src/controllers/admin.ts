@@ -5,17 +5,17 @@ import { AuthenticatedRequest } from '../middlewares/auth.middleware.js'
 
 export const getpendingrest = TryCatch(async(req:AuthenticatedRequest,res)=>{
     const restaurant = await (await getrestacollection()).find({
-        isVerified:false
+        isverified:false
     }).toArray()
-    console.log(restaurant)
+    console.log("restaurants are :",restaurant)
     res.json({
         count : restaurant.length,
         restaurant
     })
 })
 export const getpendingriders = TryCatch(async(req:AuthenticatedRequest,res)=>{
-    const riders = await (await getrestacollection()).find({
-        isVerified:false
+    const riders = await (await getridercollection()).find({
+        isverified:false
     }).toArray()
     console.log(riders)
     res.json({
@@ -44,7 +44,7 @@ export const verifyrest = TryCatch(async(req:AuthenticatedRequest,res)=>{
         },
         {
             $set: {
-                isVerified: true,
+                isverified: true,
                 updatedAt:new Date()
             }
         }
@@ -79,7 +79,7 @@ export const verifyrider = TryCatch(async(req:AuthenticatedRequest,res)=>{
         },
         {
             $set: {
-                isVerified: true,
+                isverified: true,
                 updatedAt:new Date()
             }
         }

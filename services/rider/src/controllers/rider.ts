@@ -190,7 +190,8 @@ export const fetchmyorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
             message : "please log in"
         })
     }
-    const rider = await Rider.findOne({userId:rideruserid,isAvailable:true})
+    console.log(rideruserid)
+    const rider = await Rider.findOne({userId:rideruserid,isverified:true})
     if(!rider){
         return res.status(404).json({
             message : "rider not found"
@@ -202,14 +203,15 @@ export const fetchmyorder = TryCatch(async(req:AuthenticatedRequest,res)=>{
                 "x-internal-key":process.env.INTERNAL_KEY
             }
         })
+        console.log(data)
         res.json({
             order:data
         })  
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             message : "internal server error"
         })
-        
     }
 })
 export const updateorderstatus = TryCatch(async (req: AuthenticatedRequest, res) => {

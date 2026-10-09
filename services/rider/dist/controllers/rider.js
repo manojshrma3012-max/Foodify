@@ -177,19 +177,66 @@ export const fetchmyorder = TryCatch(async (req, res) => {
             message: "please log in"
         });
     }
-    const rider = await Rider.findOne({ userId: rideruserid, isAvailable: true });
+    console.log(rideruserid);
+    const rider = await Rider.findOne({ userId: rideruserid, isverified: true });
     if (!rider) {
         return res.status(404).json({
             message: "rider not found"
         });
     }
     try {
-        const { data } = await axios.get(`${process.env.REST_SERVICE_URL}/api/order/rider-order`, { riderid: rider._id }, {
+        const { data } = await axios.get(`${process.env.REST_SERVICE_URL}/api/order/rider-order/?riderid=${rider._id}`, {
             headers: {
                 "x-internal-key": process.env.INTERNAL_KEY
             }
         });
+        console.log(data);
+        res.json({
+            order: data
+        });
     }
     catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "internal server error"
+        });
+    }
+});
+export const updateorderstatus = TryCatch(async (req, res) => {
+    const userid = req.user?.id;
+    if (!userid) {
+        return res.status(401).json({
+            message: "Please login first"
+        });
+    }
+    const rider = await Rider.findOne({ userId: userid });
+    if (!rider) {
+        return res.status(404).json({
+            message: "Rider profile not found"
+        });
+    }
+    const { orderid } = req.params;
+    if (!orderid) {
+        return res.status(400).json({
+            message: "Order id and status are required"
+        });
+    }
+    try {
+        const { data } = await axios.put(`${process.env.REST_SERVICE_URL}/api/order/updateorder/rider`, {
+            orderid
+        }, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_KEY
+            }
+        });
+        return res.status(200).json({
+            message: "Order status updated successfully",
+            data
+        });
+    }
+    catch (error) {
+        return res.status(400).json({
+            message: "Failed to update order status"
+        });
     }
 });

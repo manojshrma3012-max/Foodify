@@ -16,21 +16,17 @@ export interface order extends Document {
     price: number;
     quantity: number;
   }[];
-
   subtotal: number;
   deliveryfee: number;
   platformfee: number;
   totalamount: number;
-
   addressid: string;
-
   deliveryaddress: {
     formattedAddredd: string;
     mobileno: number;
     latitude: number;
     longitude: number;
   };
-
   status:
     | "placed"
     | "accepted"
@@ -55,17 +51,14 @@ const orderSchema = new Schema<order>(
       type: String,
       required: true,
     },
-
     restid: {
       type: String,
       required: true,
     },
-
     restname: {
       type: String,
       required: true,
     },
-
     riderId: {
       type: String,
       default: null,

@@ -4,13 +4,14 @@ import { assignRidertoorder, createorder, fetchorderforpayment, fetchRestaurantO
 
 const orderroute = Router()
 
+orderroute.put('/assign-rider',assignRidertoorder)
+orderroute.get('/rider-order',getorderrider)
+orderroute.put('/updateorder/rider',updateorderrider)
 orderroute.post('/create-order',authmiddle,createorder)
 orderroute.get('/get-all',authmiddle,getmyorders)
 orderroute.get('/get-order/:id',fetchorderforpayment)
 orderroute.get('/:restid',authmiddle,isSeller,fetchRestaurantOrders)
 orderroute.put('/update/:orderid',authmiddle,isSeller,updateorderstatus)
 orderroute.get('/single/:orderid',authmiddle,fetchsingleorder)
-orderroute.put('/assign-rider',assignRidertoorder)
-orderroute.get('/rider-order',getorderrider)
-orderroute.put('/updateorder/rider',updateorderrider)
+
 export default orderroute
